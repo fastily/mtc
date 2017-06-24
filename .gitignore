@@ -1,0 +1,24 @@
+bin/
+build/
+
+# OS Generated files
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+
+# Trash from Eclipse
+.project
+.classpath
+.settings
+
+# Gradle
+.gradle/
+/bin/
+
+# IntelliJ IDEA
+.idea
+*.iml

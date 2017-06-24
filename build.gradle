@@ -1,0 +1,30 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+
+repositories {
+    mavenLocal()
+    jcenter()
+}
+
+dependencies {
+    compile 'fastily:jwiki:1.3.1'
+}
+
+
+task mtc(type: Jar) {
+  baseName = "MTC"
+  version = "1.0.1"
+
+  from {
+    configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+  }
+
+  manifest {
+    attributes 'Main-Class': 'mtc.App'
+  }
+  
+  exclude "**/bots/**", "**/reports/**", "**/tools/**", "META-INF/*.SF", "**/LICENSE*", "**/NOTICE*", "**/maven/**"
+
+  with jar
+}
