@@ -5,13 +5,13 @@ import java.util.ArrayList;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 
-import enwp.WTP;
+import fastily.enwp.WTP;
 import fastily.jwiki.core.MQuery;
 import fastily.jwiki.core.NS;
 import fastily.jwiki.core.Wiki;
-import ctools.util.FCLI;
-import ctools.util.Toolbox;
-import ctools.util.WikiX;
+import fastily.ctools.util.FCLI;
+import fastily.ctools.util.Toolbox;
+import fastily.ctools.util.WikiX;
 
 /**
  * Generates a report where each matching file found. Generated report will be in user's userspace under

@@ -10,12 +10,12 @@ import java.util.HashSet;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 
-import ctools.tplate.ParsedItem;
-import ctools.tplate.Template;
-import ctools.util.Toolbox;
-import ctools.util.WikiX;
-import enwp.WPStrings;
-import enwp.WTP;
+import fastily.ctools.tplate.ParsedItem;
+import fastily.ctools.tplate.Template;
+import fastily.ctools.util.Toolbox;
+import fastily.ctools.util.WikiX;
+import fastily.enwp.WPStrings;
+import fastily.enwp.WTP;
 import fastily.jwiki.core.MQuery;
 import fastily.jwiki.core.NS;
 import fastily.jwiki.core.Wiki;
