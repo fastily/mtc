@@ -20,7 +20,7 @@ import fastily.jwiki.core.NS;
 import fastily.jwiki.core.Wiki;
 import fastily.jwiki.util.FL;
 import fastily.jwiki.util.FSystem;
-import fastily.ctools.ui.FXTool;
+import fastily.wpkit.ui.FXTool;
 
 /**
  * An MTC UI window

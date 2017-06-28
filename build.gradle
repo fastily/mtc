@@ -9,7 +9,7 @@ repositories {
 
 dependencies {
     compile 'fastily:jwiki:1.3.1'
-    compile 'fastily:ctools:0.0.1'
+    compile 'fastily:wpkit:0.0.1'
 }
 
 task mtc(type: Jar) {

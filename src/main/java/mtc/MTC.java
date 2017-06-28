@@ -10,18 +10,18 @@ import java.util.HashSet;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 
-import fastily.ctools.tplate.ParsedItem;
-import fastily.ctools.tplate.Template;
-import fastily.ctools.util.Toolbox;
-import fastily.ctools.util.WikiX;
-import fastily.enwp.WPStrings;
-import fastily.enwp.WTP;
 import fastily.jwiki.core.MQuery;
 import fastily.jwiki.core.NS;
 import fastily.jwiki.core.Wiki;
 import fastily.jwiki.dwrap.ImageInfo;
 import fastily.jwiki.util.FL;
 import fastily.jwiki.util.FSystem;
+import fastily.wpkit.WPStrings;
+import fastily.wpkit.WTP;
+import fastily.wpkit.tplate.ParsedItem;
+import fastily.wpkit.tplate.Template;
+import fastily.wpkit.util.Toolbox;
+import fastily.wpkit.util.WikiX;
 
 /**
  * Business Logic for MTC. Contains shared methods, constants, and Objects.
