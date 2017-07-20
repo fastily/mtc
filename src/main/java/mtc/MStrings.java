@@ -17,7 +17,7 @@ public class MStrings
 	/**
 	 * Version number
 	 */
-	protected static final String version = "1.0.0";
+	protected static final String version = "1.0.1";
 
 	/**
 	 * Short name for MTC!
@@ -58,12 +58,7 @@ public class MStrings
 	 * Edit summary for files transferred to Commons on enwp
 	 */
 	protected static final String tTo = String.format("Transferred to Commons (%s) (%s)", mtcLink, version);
-	
-	/**
-	 * The URL base for the English Wikipedia.
-	 */
-	protected static final String enwpURLBase = "https://en.wikipedia.org/wiki/";
-	
+		
 	/**
 	 * Speedy deletion F8 reason format string.
 	 */

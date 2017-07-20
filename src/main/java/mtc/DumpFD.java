@@ -8,9 +8,10 @@ import org.apache.commons.cli.Options;
 import fastily.jwiki.core.MQuery;
 import fastily.jwiki.core.NS;
 import fastily.jwiki.core.Wiki;
-import fastily.wpkit.WTP;
+import fastily.wpkit.text.ReportUtils;
+import fastily.wpkit.text.WTP;
 import fastily.wpkit.util.FCLI;
-import fastily.wpkit.util.Toolbox;
+import fastily.wpkit.util.WikiGen;
 import fastily.wpkit.util.WikiX;
 
 /**
@@ -25,7 +26,7 @@ public final class DumpFD
 	/**
 	 * The Wiki object to use
 	 */
-	private static Wiki wiki = Toolbox.getFSock();
+	private static Wiki wiki = WikiGen.wg.get("FSock", "en.wikipedia.org");
 
 	/**
 	 * The source to fetch files from. This can be a category, template, or username.
@@ -89,7 +90,7 @@ public final class DumpFD
 		output += "|}\n";
 
 		wiki.edit(mtcSources, output, "+");
-		wiki.edit(mtcSources + "/List", Toolbox.listify("", tl, true), "+");
+		wiki.edit(mtcSources + "/List", ReportUtils.listify("", tl, true), "+");
 	}
 
 	/**

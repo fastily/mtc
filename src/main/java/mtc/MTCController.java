@@ -15,7 +15,6 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.input.Clipboard;
 import fastily.jwiki.core.NS;
 import fastily.jwiki.core.Wiki;
 import fastily.jwiki.util.FL;
@@ -34,11 +33,6 @@ public class MTCController
 	 * The location of this controller's FXML.
 	 */
 	public static final String fxmlLoc = "MTC.fxml";
-
-	/**
-	 * The OS clipboard
-	 */
-	private static Clipboard clipboard = Clipboard.getSystemClipboard();
 
 	/**
 	 * Date format for prefixing output.
@@ -91,12 +85,6 @@ public class MTCController
 	protected Button startButton;
 
 	/**
-	 * The paste Button
-	 */
-	@FXML
-	protected Button pasteButton;
-
-	/**
 	 * Displays username in the upper right screen corner
 	 */
 	@FXML
@@ -140,16 +128,6 @@ public class MTCController
 			FXTool.warnUser("Are you missing filesystem Read/Write Permissions?");
 			FSystem.errAndExit(e, null);
 		}
-	}
-
-	/**
-	 * Pastes a String (if available) from the OS clipboard into {@code textInput}.
-	 */
-	@FXML
-	protected void doPaste()
-	{
-		if (clipboard.hasString())
-			textInput.setText(clipboard.getString());
 	}
 
 	/**

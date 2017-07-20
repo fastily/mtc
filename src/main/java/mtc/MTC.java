@@ -16,11 +16,10 @@ import fastily.jwiki.core.Wiki;
 import fastily.jwiki.dwrap.ImageInfo;
 import fastily.jwiki.util.FL;
 import fastily.jwiki.util.FSystem;
-import fastily.wpkit.WPStrings;
-import fastily.wpkit.WTP;
+import fastily.wpkit.text.ReportUtils;
+import fastily.wpkit.text.WTP;
 import fastily.wpkit.tplate.ParsedItem;
 import fastily.wpkit.tplate.Template;
-import fastily.wpkit.util.Toolbox;
 import fastily.wpkit.util.WikiX;
 
 /**
@@ -92,7 +91,7 @@ public final class MTC
 	{
 		// Initialize Wiki objects
 		this.enwp = enwp;
-		com = Toolbox.getCommons(enwp);
+		com = enwp.getWiki("commons.wikimedia.org");
 
 		// Generate whitelist & blacklist
 		HashMap<String, ArrayList<String>> l = MQuery.getLinksOnPage(enwp,
@@ -110,11 +109,13 @@ public final class MTC
 		mtcRegex = WTP.mtc.getRegex(enwp);
 
 		// Process template data
-		Toolbox.fetchPairedConfig(enwp, MStrings.fullname + "/Regexes").forEach((k, v) -> {
-			String t = enwp.nss(k);
-			for (String s : v.split("\\|"))
-				tpMap.put(s, t);
-		});
+		for (String line : enwp.getPageText(MStrings.fullname + "/Redirects").split("\n"))
+			if (!line.startsWith("<") && !line.isEmpty())
+			{
+				String[] splits = line.split("\\|");
+				for (String s : splits)
+					tpMap.put(s, splits[0]);
+			}
 	}
 
 	/**
@@ -148,7 +149,7 @@ public final class MTC
 				String comFN;
 				do
 				{
-					comFN = Toolbox.permuteFileName(k);
+					comFN = Utils.permuteFileName(k);
 				} while (com.exists(comFN)); // loop until available filename is found
 
 				m.put(k, comFN);
@@ -160,6 +161,7 @@ public final class MTC
 
 	/**
 	 * Filters files which obviously cannot be transferred to Commons.
+	 * 
 	 * @param titles The titles to check.
 	 * @return An ArrayList with files that are most likely eligible for Commons.
 	 */
@@ -241,7 +243,7 @@ public final class MTC
 			return name;
 		}
 	}
-	
+
 	/**
 	 * Represents a file to transfer to Commons
 	 * 
@@ -323,7 +325,7 @@ public final class MTC
 					return true;
 				}
 
-				return t != null && Toolbox.downloadFile(enwp.apiclient.client, imgInfoL.get(0).url.toString(), localFN)
+				return t != null && Utils.downloadFile(enwp.apiclient.client, imgInfoL.get(0).url.toString(), localFN)
 						&& com.upload(Paths.get(localFN), comFN, t, String.format(MStrings.tFrom, wpFN))
 						&& enwp.edit(wpFN,
 								String.format("{{subst:ncd|%s|reviewer=%s}}%n", comFN, enwp.whoami())
@@ -461,8 +463,8 @@ public final class MTC
 		}
 
 		/**
-		 * Copies a parameter from {@code source} to {@code target} if it exists. Fills in the empty String in {@code target}
-		 * if {@code param} did not exist in {@code source}
+		 * Copies a parameter from {@code source} to {@code target} if it exists. Fills in the empty String in
+		 * {@code target} if {@code param} did not exist in {@code source}
 		 * 
 		 * @param target The Template which will have {@code param} copied to it from {@code source}
 		 * @param source The Template which will have {@code param} copied from it to {@code target}
@@ -488,8 +490,7 @@ public final class MTC
 			// Generate Upload Log Section
 			try
 			{
-				t += "\n== {{Original upload log}} ==\n"
-						+ String.format("{{Original description page|en.wikipedia|%s}}%n", enwp.nss(wpFN))
+				t += "\n== {{Original upload log}} ==\n" + String.format("{{Original file page|en.wikipedia|%s}}%n", enwp.nss(wpFN))
 						+ "{| class=\"wikitable\"\n! {{int:filehist-datetime}} !! {{int:filehist-dimensions}} !! {{int:filehist-user}} "
 						+ "!! {{int:filehist-comment}}\n|-\n";
 			}
@@ -499,8 +500,8 @@ public final class MTC
 			}
 
 			for (ImageInfo ii : imgInfoL)
-				t += String.format(MStrings.uLFmt, WPStrings.iso8601dtf.format(LocalDateTime.ofInstant(ii.timestamp, ZoneOffset.UTC)), ii.dimensions.x, ii.dimensions.y,
-						ii.user, ii.user, ii.summary.replace("\n", " ").replace("  ", " "));
+				t += String.format(MStrings.uLFmt, ReportUtils.iso8601dtf.format(LocalDateTime.ofInstant(ii.timestamp, ZoneOffset.UTC)),
+						ii.dimensions.x, ii.dimensions.y, ii.user, ii.user, ii.summary.replace("\n", " ").replace("  ", " "));
 			t += "|}\n\n{{Subst:Unc}}";
 
 			if (useTrackingCat)

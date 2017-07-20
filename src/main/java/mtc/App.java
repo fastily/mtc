@@ -9,7 +9,6 @@ import fastily.jwiki.core.Wiki;
 import fastily.jwiki.util.FSystem;
 import fastily.wpkit.ui.FXTool;
 import fastily.wpkit.ui.LoginController;
-import fastily.wpkit.util.Toolbox;
 
 /**
  * A GUI wrapper for MTC
@@ -40,10 +39,10 @@ public class App extends Application
 	{
 		// Check Version
 		String minVersion =  wiki.getPageText(MStrings.fullname + "/Version").trim();
-		if(!Toolbox.versionCheck(MStrings.version, minVersion))
+		if(!versionCheck(MStrings.version, minVersion))
 		{
 			FXTool.warnUser(String.format("Your version of %s (%s) is outdated.  The current version is (%s), please download the newest version.", MStrings.name, MStrings.version, minVersion)); 
-			FXTool.launchBrowser(this, MStrings.enwpURLBase + MStrings.fullname);
+			FXTool.launchBrowser(this, "https://en.wikipedia.org/wiki/" + MStrings.fullname);
 
 			Platform.exit();
 		}
@@ -81,5 +80,26 @@ public class App extends Application
    
       stage.setTitle(MStrings.name);
       stage.show();
+	}
+	
+	/**
+	 * Checks the version String of a program with the version String of the server. PRECONDITION: {@code local} and
+	 * {@code minVersion} ONLY contain numbers and the '.' character.
+	 * 
+	 * @param local The version String of the program. (e.g. 0.2.1)
+	 * @param minVersion The version String of the server. (e.g. 1.3.2)
+	 * @return True if the version of the local String is greater than or equal to the server's version String.
+	 */
+	public static boolean versionCheck(String local, String minVersion)
+	{
+		try
+		{
+			return Integer.parseInt(local.replace(".", "")) >= Integer.parseInt(minVersion.replace(".", ""));
+		}
+		catch (Throwable e)
+		{
+			e.printStackTrace();
+		}
+		return false;
 	}
 }
