@@ -19,7 +19,7 @@ import fastily.wpkit.util.WikiGen;
  * @author Fastily
  *
  */
-public final class CMTC
+public class CMTC
 {
 	/**
 	 * Main driver
