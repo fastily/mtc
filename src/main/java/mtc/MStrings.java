@@ -47,16 +47,6 @@ public class MStrings
 	 * Edit summary for files transferred to Commons on enwp
 	 */
 	protected static final String tTo = String.format("Transferred to Commons ([[%s|%s]]) (%s)", fullname, name, version);
-		
-	/**
-	 * Speedy deletion F8 reason format string.
-	 */
-	protected static final String f8Fmt = "[[WP:CSD#F8|F8]]: Media file available on Commons: [[:%s]]";
-
-	/**
-	 * The format String for a row in the Upload Log section.
-	 */
-	protected static final String uLFmt = "%n|-%n| %s || %d × %d || [[w:User:%s|%s]] || ''<nowiki>%s</nowiki>''";
 
 	/**
 	 * Constructors disallowed.

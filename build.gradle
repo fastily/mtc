@@ -13,7 +13,7 @@ dependencies {
 
 task mtc(type: Jar) {
   baseName = "MTC"
-  version = "1.0.1"
+  version = "1.0.2"
 
   from {
     configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }

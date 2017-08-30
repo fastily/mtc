@@ -14,7 +14,7 @@ import fastily.jwiki.core.Wiki;
 import fastily.jwiki.dwrap.ImageInfo;
 import fastily.jwiki.util.FL;
 import fastily.jwiki.util.FSystem;
-import fastily.wpkit.text.ReportUtils;
+import fastily.wpkit.text.StrUtil;
 import fastily.wpkit.text.WTP;
 import fastily.wpkit.tp.WParser;
 import fastily.wpkit.tp.WTemplate;
@@ -42,7 +42,7 @@ public final class MTC
 	/**
 	 * Regex matching Copy to Commons templates.
 	 */
-	protected final String mtcRegex;
+	protected String mtcRegex;
 
 	/**
 	 * Flag indicating whether this is a debug-mode/dry run (do not perform transfers)
@@ -67,7 +67,7 @@ public final class MTC
 	/**
 	 * Contains redirect data for license tags
 	 */
-	protected HashMap<String, String> tpMap;
+	protected HashMap<String, String> tpMap = new HashMap<>();
 	
 	/**
 	 * Files with these categories should not be transferred.
@@ -91,7 +91,7 @@ public final class MTC
 	 * 
 	 * @throws Throwable On IO error
 	 */
-	public MTC(Wiki enwp) throws Throwable
+	protected MTC(Wiki enwp) throws Throwable
 	{
 		// Initialize Wiki objects
 		this.enwp = enwp;
@@ -111,23 +111,16 @@ public final class MTC
 		else if (!Files.isDirectory(MStrings.fdPath))
 			Files.createDirectory(MStrings.fdPath); //TODO: Use temp dirs
 		
-		tpMap = initNormalizerMap("Redirects");
-	}
-
-	protected HashMap<String, String> initNormalizerMap(String pg)
-	{
-		HashMap<String, String> l = new HashMap<>();
-		for (String line : enwp.getPageText(MStrings.fullname + "/" + pg).split("\n"))
+		// Process template redirect data
+		for (String line : enwp.getPageText(MStrings.fullname + "/Redirects").split("\n"))
 			if (!line.startsWith("<") && !line.isEmpty())
 			{
 				String[] splits = line.split("\\|");
 				for (String s : splits)
-					l.put(s, splits[0]);
+					tpMap.put(s, splits[0]);
 			}
-		
-		return l;
 	}
-	
+
 	/**
 	 * Filters (if enabled) and resolves Commons filenames for transfer candidates
 	 * 
@@ -184,91 +177,6 @@ public final class MTC
 	}
 
 	/**
-	 * Filters files which obviously cannot be transferred to Commons.
-	 * 
-	 * @param titles The titles to check.
-	 * @return An ArrayList with files that are most likely eligible for Commons.
-	 */
-	public ArrayList<String> canTransfer(ArrayList<String> titles)
-	{
-		ArrayList<String> l = new ArrayList<>();
-		MQuery.getSharedDuplicatesOf(enwp, titles).forEach((k, v) -> {
-			if (v.size() == 0)
-				l.add(k);
-		});
-
-		ArrayList<String> rl = new ArrayList<>();
-		MQuery.getCategoriesOnPage(enwp, l).forEach((k, v) -> {
-			if (!v.stream().anyMatch(blacklist::contains) && v.stream().anyMatch(whitelist::contains))
-				rl.add(k);
-		});
-
-		return rl;
-	}
-
-	/**
-	 * Represents various supported file transfer modes.
-	 * 
-	 * @author Fastily
-	 *
-	 */
-	protected enum TransferMode
-	{
-		/**
-		 * Represents the single file transfer mode.
-		 */
-		FILE("File"),
-
-		/**
-		 * Represents category mass-transfer mode.
-		 */
-		CATEGORY("Category"),
-
-		/**
-		 * Represents user uploads mass-transfer mode.
-		 */
-		USER("User"),
-
-		/**
-		 * Represents template transclusions mass-transfer mode.
-		 */
-		TEMPLATE("Template"),
-
-		/**
-		 * Represents all file links on a page mass-transfer mode.
-		 */
-		FILELINKS("Filelinks"),
-
-		/**
-		 * Represents all file namespace links on a page mass-transfer mode.
-		 */
-		LINKS("Links");
-
-		/**
-		 * Constructor, creates a new TransferMode.
-		 * 
-		 * @param name The user-suitable name to create this TransferMode with.
-		 */
-		private TransferMode(String name)
-		{
-			this.name = name;
-		}
-
-		/**
-		 * The user-suitable name of this TransferMode.
-		 */
-		private String name;
-
-		/**
-		 * Returns the user-suitable name of this TransferMode.
-		 */
-		public String toString()
-		{
-			return name;
-		}
-	}
-
-	/**
 	 * Represents a file to transfer to Commons
 	 * 
 	 * @author Fastily
@@ -285,11 +193,6 @@ public final class MTC
 		 * The commons filename and local path
 		 */
 		private String comFN, localFN;
-
-		/**
-		 * The root WikiText object parsed from this file's enwp page. 
-		 */
-		private WikiText root;
 		
 		/**
 		 * The summary and license sections.
@@ -302,7 +205,7 @@ public final class MTC
 		private ArrayList<ImageInfo> imgInfoL;
 
 		/**
-		 * The user who originally uploaded the file. Excludes <code>User:</code> prefix.
+		 * The user who originally uploaded the file. Excludes {@code User:} prefix.
 		 */
 		private String uploader;
 
@@ -327,17 +230,6 @@ public final class MTC
 			localFN = MStrings.fdump + baseFN.hashCode() + baseFN.substring(baseFN.lastIndexOf('.'));
 		}
 		
-		protected WikiText preprocess()
-		{
-			String t = enwp.getPageText(wpFN);
-			t = t.replaceAll("(?s)\\<!\\-\\-.*?\\-\\-\\>", ""); // strip comments
-			t = t.replaceAll("(?i)\\n?\\[\\[(Category:).*?\\]\\]", ""); // categories don't transfer well.
-			t = t.replaceAll("\\n?\\=\\=.*?\\=\\=\\n?", ""); // strip headers
-			t = t.replaceAll("(?si)\\{\\|\\s*?class\\=\"wikitable.+?\\|\\}", ""); // strip captions
-			
-			return WParser.parseText(enwp, t);
-		}
-		
 		/**
 		 * Attempts to transfer an enwp file to Commons
 		 * 
@@ -346,28 +238,25 @@ public final class MTC
 		protected boolean doTransfer()
 		{
 			try
-			{				
-				root = preprocess();
-
+			{
 				imgInfoL = enwp.getImageInfo(wpFN);
 				uploader = imgInfoL.get(imgInfoL.size() - 1).user;
 
-				procText();
-				String t = gen();
+				String text = gen();
 
 				if (dryRun)
 				{
-					System.out.println(t);
+					System.out.println(text);
 					return true;
 				}
 
-				return t != null && Utils.downloadFile(enwp.apiclient.client, imgInfoL.get(0).url.toString(), localFN)
-						&& com.upload(Paths.get(localFN), comFN, t, MStrings.tFrom)
+				return text != null && Utils.downloadFile(enwp.apiclient.client, imgInfoL.get(0).url.toString(), localFN)
+						&& com.upload(Paths.get(localFN), comFN, text, MStrings.tFrom)
 						&& enwp.edit(wpFN,
 								String.format("{{subst:ncd|%s|reviewer=%s}}%n", comFN, enwp.whoami())
 										+ enwp.getPageText(wpFN).replaceAll(mtcRegex, ""),
 								MStrings.tTo)
-						&& ( !deleteOnTransfer || enwp.delete(wpFN, String.format(MStrings.f8Fmt, comFN)) );
+						&& ( !deleteOnTransfer || enwp.delete(wpFN, String.format("[[WP:CSD#F8|F8]]: Media file available on Commons: [[:%s]]", comFN)) );
 			}
 			catch (Throwable e)
 			{
@@ -379,20 +268,25 @@ public final class MTC
 		/**
 		 * Processes parsed text and templates from the API
 		 */
-		private void procText()
+		private String gen()
 		{
-			ArrayList<WTemplate> masterTPL = root.getTemplatesR();
-
+			// preprocess text
+			String txt = enwp.getPageText(wpFN);
+			txt = txt.replaceAll("(?s)\\<!\\-\\-.*?\\-\\-\\>", ""); // strip comments
+			txt = txt.replaceAll("(?i)\\n?\\[\\[(Category:).*?\\]\\]", ""); // categories don't transfer well.
+			txt = txt.replaceAll("\\n?\\=\\=.*?\\=\\=\\n?", ""); // strip headers
+			txt = txt.replaceAll("(?si)\\{\\|\\s*?class\\=\"wikitable.+?\\|\\}", ""); // strip captions
+			
+			WikiText docRoot = WParser.parseText(enwp, txt);
+			ArrayList<WTemplate> masterTPL = docRoot.getTemplatesR();
+			
 			// Normalize template titles
-			for (WTemplate t : masterTPL)
-			{
-				String tp = enwp.whichNS(t.title).equals(NS.TEMPLATE) ? enwp.nss(t.title) : t.title; //Remove 'Template:' prefix
-				tp = tp.replace('_', ' ');
-				tp = tp.length() <= 1 ? tp.toUpperCase() : "" + Character.toUpperCase(tp.charAt(0)) + tp.substring(1);
+			masterTPL.forEach(t -> {
+				t.normalizeTitle(enwp);
 				
-				if (tpMap.containsKey(tp))
-					t.title = tpMap.get(tp);
-			}
+				if (tpMap.containsKey(t.title))
+					t.title = tpMap.get(t.title);
+			});
 
 			// Filter Templates which are not on Commons
 			MQuery.exists(com, FL.toAL(masterTPL.stream().map(t -> com.convertIfNotInNS(t.title, NS.TEMPLATE)))).forEach((k, v) -> ctpCache.put(com.nss(k), v)); //TODO: implement cache
@@ -439,7 +333,7 @@ public final class MTC
 			}
 
 			// Add any Commons-compatible top-level templates to License section.
-			masterTPL.retainAll(root.getTemplates());
+			masterTPL.retainAll(docRoot.getTemplates());
 			masterTPL.forEach(t -> {
 				licSection.append(String.format("%s%n", t));
 				t.drop();
@@ -447,13 +341,34 @@ public final class MTC
 			
 			// fill-out an Information Template
 			sumSection.append(String.format(infoT, 
-					fuzzForParam(info, "Description", "") + root.toString().trim(),
+					fuzzForParam(info, "Description", "") + docRoot.toString().trim(),
 					fuzzForParam(info, "Source", isOwnWork ? "{{Own work by original uploader}}" : "").trim(),
 					fuzzForParam(info, "Date", "").trim(),
 					fuzzForParam(info, "Author", isOwnWork ? String.format("[[User:%s|%s]]", uploader, uploader) : "").trim(),
 					fuzzForParam(info, "Permission", "").trim(),
 					fuzzForParam(info, "Other_versions", "").trim()
 					));
+			
+			// Work with text as String
+			String out = sumSection.toString() + licSection.toString();
+			out = out.replaceAll("(?<=\\[\\[)(.+?\\]\\])", "w:$1"); // add enwp prefix to links
+			out = out.replaceAll("(?i)\\[\\[(w::|w:w:)", "[[w:"); // Remove any double colons in interwiki links
+			out = out.replaceAll("\\n{3,}", "\n"); // Remove excessive spacing
+			
+			// Generate Upload Log Section
+				out += "\n== {{Original upload log}} ==\n" + String.format("{{Original file page|en.wikipedia|%s}}%n", enwp.nss(wpFN))
+						+ "{| class=\"wikitable\"\n! {{int:filehist-datetime}} !! {{int:filehist-dimensions}} !! {{int:filehist-user}} "
+						+ "!! {{int:filehist-comment}}";
+
+			for (ImageInfo ii : imgInfoL)
+				out += String.format("%n|-%n| %s || %d × %d || [[w:User:%s|%s]] || ''<nowiki>%s</nowiki>''", StrUtil.iso8601dtf.format(LocalDateTime.ofInstant(ii.timestamp, ZoneOffset.UTC)),
+						ii.dimensions.x, ii.dimensions.y, ii.user, ii.user, ii.summary.replace("\n", " ").replace("  ", " "));
+			out += "\n|}\n\n{{Subst:Unc}}";
+
+			if (useTrackingCat)
+				out += "\n[[Category:Uploaded with MTC!]]";
+			
+			return out;
 		}
 
 		/**
@@ -467,40 +382,6 @@ public final class MTC
 		{
 			String fzdKey = k;
 			return t != null && (t.has(fzdKey) || t.has(fzdKey = k.toLowerCase()) || t.has(fzdKey = fzdKey.replace('_', ' '))) ? t.get(fzdKey).toString() : defaultP;
-		}
-		
-		/**
-		 * Renders this TransferFile as wikitext for Commons.
-		 */
-		private String gen()
-		{
-			String t = sumSection.toString() + licSection.toString();
-
-			t = t.replaceAll("(?<=\\[\\[)(.+?\\]\\])", "w:$1"); // add enwp prefix to links
-			t = t.replaceAll("(?i)\\[\\[(w::|w:w:)", "[[w:"); // Remove any double colons in interwiki links
-			t = t.replaceAll("\\n{3,}", "\n"); // Remove excessive spacing
-			
-			// Generate Upload Log Section
-			try
-			{
-				t += "\n== {{Original upload log}} ==\n" + String.format("{{Original file page|en.wikipedia|%s}}%n", enwp.nss(wpFN))
-						+ "{| class=\"wikitable\"\n! {{int:filehist-datetime}} !! {{int:filehist-dimensions}} !! {{int:filehist-user}} "
-						+ "!! {{int:filehist-comment}}";
-			}
-			catch (Throwable e)
-			{
-				e.printStackTrace();
-			}
-
-			for (ImageInfo ii : imgInfoL)
-				t += String.format(MStrings.uLFmt, ReportUtils.iso8601dtf.format(LocalDateTime.ofInstant(ii.timestamp, ZoneOffset.UTC)),
-						ii.dimensions.x, ii.dimensions.y, ii.user, ii.user, ii.summary.replace("\n", " ").replace("  ", " "));
-			t += "\n|}\n\n{{Subst:Unc}}";
-
-			if (useTrackingCat)
-				t += "\n[[Category:Uploaded with MTC!]]";
-
-			return t;
 		}
 	}
 }

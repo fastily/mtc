@@ -52,7 +52,7 @@ public class MTCController
 	 * The ComboBox for mode selection
 	 */
 	@FXML
-	protected ComboBox<MTC.TransferMode> modeSelect;
+	protected ComboBox<TransferMode> modeSelect;
 
 	/**
 	 * The TextField for user input
@@ -116,7 +116,7 @@ public class MTCController
 		this.wiki = wiki;
 
 		userLabel.setText("Hello, " + wiki.whoami());
-		modeSelect.getItems().addAll(MTC.TransferMode.values());
+		modeSelect.getItems().addAll(TransferMode.values());
 		deleteToggle.setDisable(!wiki.listUserRights(wiki.whoami()).contains("sysop"));
 
 		try
@@ -148,7 +148,7 @@ public class MTCController
 		if (currTask == null || currTask.isDone())
 		{
 			String text = textInput.getText().trim();
-			MTC.TransferMode mode = modeSelect.getSelectionModel().getSelectedItem();
+			TransferMode mode = modeSelect.getSelectionModel().getSelectedItem();
 
 			if (text.isEmpty() || mode == null)
 				FXTool.warnUser("Please select a transfer mode and specify a File, Category, Username, or Template to continue.");
@@ -180,7 +180,7 @@ public class MTCController
 		/**
 		 * The mode of transfer to attempt.
 		 */
-		private MTC.TransferMode mode;
+		private TransferMode mode;
 
 		/**
 		 * The text collected from user input.
@@ -198,7 +198,7 @@ public class MTCController
 		 * @param mode The TransferMode to use.
 		 * @param userInput The text input from the user.
 		 */
-		private TransferTask(MTC.TransferMode mode, String userInput)
+		private TransferTask(TransferMode mode, String userInput)
 		{
 			this.mode = mode;
 			this.userInput = userInput;
@@ -294,6 +294,68 @@ public class MTCController
 				}
 
 			return null;
+		}
+	}
+
+	/**
+	 * Represents various supported file transfer modes.
+	 * 
+	 * @author Fastily
+	 *
+	 */
+	private enum TransferMode
+	{
+		/**
+		 * Represents the single file transfer mode.
+		 */
+		FILE("File"),
+	
+		/**
+		 * Represents category mass-transfer mode.
+		 */
+		CATEGORY("Category"),
+	
+		/**
+		 * Represents user uploads mass-transfer mode.
+		 */
+		USER("User"),
+	
+		/**
+		 * Represents template transclusions mass-transfer mode.
+		 */
+		TEMPLATE("Template"),
+	
+		/**
+		 * Represents all file links on a page mass-transfer mode.
+		 */
+		FILELINKS("Filelinks"),
+	
+		/**
+		 * Represents all file namespace links on a page mass-transfer mode.
+		 */
+		LINKS("Links");
+	
+		/**
+		 * Constructor, creates a new TransferMode.
+		 * 
+		 * @param name The user-suitable name to create this TransferMode with.
+		 */
+		private TransferMode(String name)
+		{
+			this.name = name;
+		}
+	
+		/**
+		 * The user-suitable name of this TransferMode.
+		 */
+		private String name;
+	
+		/**
+		 * Returns the user-suitable name of this TransferMode.
+		 */
+		public String toString()
+		{
+			return name;
 		}
 	}
 }
