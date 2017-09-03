@@ -1,10 +1,5 @@
 package mtc;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import fastily.jwiki.util.FSystem;
-
 /**
  * Configurable, frequently used constant Strings for MTC.
  * 
@@ -21,22 +16,12 @@ public class MStrings
 	/**
 	 * Short name for MTC!
 	 */
-	protected static final String name = "MTC!"; 
-	
+	protected static final String name = "MTC!";
+
 	/**
 	 * The full name of MTC!, with the namespace prefix.
 	 */
 	protected static final String fullname = "Wikipedia:" + name;
-	
-	/**
-	 * The directory pointing to the location for file downloads
-	 */
-	protected static final String fdump = "mtcfiles" + FSystem.psep;
-
-	/**
-	 * The Path object pointing to {@code fdump}
-	 */
-	protected static final Path fdPath = Paths.get(fdump);
 
 	/**
 	 * Format String edit summary for files uploaded to Commons for Commons

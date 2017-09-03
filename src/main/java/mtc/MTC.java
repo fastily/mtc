@@ -1,6 +1,9 @@
 package mtc;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -8,17 +11,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import fastily.jwiki.core.ColorLog;
 import fastily.jwiki.core.MQuery;
 import fastily.jwiki.core.NS;
 import fastily.jwiki.core.Wiki;
 import fastily.jwiki.dwrap.ImageInfo;
 import fastily.jwiki.util.FL;
-import fastily.jwiki.util.FSystem;
 import fastily.wpkit.text.StrUtil;
 import fastily.wpkit.text.WTP;
 import fastily.wpkit.tp.WParser;
 import fastily.wpkit.tp.WTemplate;
 import fastily.wpkit.tp.WikiText;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * Business Logic for MTC. Contains shared methods, constants, and Objects.
@@ -39,6 +45,11 @@ public final class MTC
 	protected static String 	infoT = "{{Information\n|description=%s\n|source=%s\n|date=%s\n|"
 			+ "author=%s\n|permission=%s\n|other_versions=%s\n}}\n";
 	
+	/**
+	 * Path pointing to temporary folder to store downloaded files.
+	 */
+	protected static Path mtcfiles = Paths.get((System.getProperty("os.name").contains("Windows") ? "" : "/tmp/") + "mtcfiles");
+
 	/**
 	 * Regex matching Copy to Commons templates.
 	 */
@@ -106,10 +117,8 @@ public final class MTC
 		whitelist = new HashSet<>(l.get(MStrings.fullname + "/Whitelist"));
 
 		// Generate download directory
-		if (Files.isRegularFile(MStrings.fdPath))
-			FSystem.errAndExit(MStrings.fdump + " is file, please remove it so MTC can continue");
-		else if (!Files.isDirectory(MStrings.fdPath))
-			Files.createDirectory(MStrings.fdPath); //TODO: Use temp dirs
+		if (!Files.isDirectory(mtcfiles))
+			Files.createDirectory(mtcfiles);
 		
 		// Process template redirect data
 		for (String line : enwp.getPageText(MStrings.fullname + "/Redirects").split("\n"))
@@ -166,7 +175,7 @@ public final class MTC
 				String comFN;
 				do
 				{
-					comFN = Utils.permuteFileName(k);
+					comFN = new StringBuilder(k).insert(k.lastIndexOf('.'), " " + Math.round(Math.random() * 1000)).toString();
 				} while (com.exists(comFN)); // loop until available filename is found
 
 				m.put(k, comFN);
@@ -174,6 +183,37 @@ public final class MTC
 		});
 
 		return m;
+	}
+	
+	/**
+	 * Downloads a file and saves it to disk.
+	 * 
+	 * @param client The OkHttpClient to use perform network connections with.
+	 * @param u The url to download from
+	 * @param localpath The local path to save the file at.
+	 * @return True on success.
+	 */
+	private static boolean downloadFile(OkHttpClient client, String u, Path localpath)
+	{
+		ColorLog.fyi("Downloading a file to " + localpath);
+
+		byte[] bf = new byte[1024 * 512]; // 512kb buffer.
+		int read;
+		try (Response r = client.newCall(new Request.Builder().url(u).get().build()).execute();
+				OutputStream out = Files.newOutputStream(localpath))
+		{
+			InputStream in = r.body().byteStream();
+			while ((read = in.read(bf)) > -1)
+				out.write(bf, 0, read);
+
+			return true;
+		}
+		catch (Throwable e)
+		{
+			e.printStackTrace();
+		}
+
+		return false;
 	}
 
 	/**
@@ -190,9 +230,14 @@ public final class MTC
 		protected String wpFN;
 
 		/**
-		 * The commons filename and local path
+		 * The commons filename 
 		 */
-		private String comFN, localFN;
+		private String comFN;
+		
+		/**
+		 * The local path
+		 */
+		private Path localFN;
 		
 		/**
 		 * The summary and license sections.
@@ -210,7 +255,7 @@ public final class MTC
 		private String uploader;
 
 		/**
-		 * Flag indicating if this file contains own work templates.
+		 * Flag indicating if this file is tagged as own work.
 		 */
 		private boolean isOwnWork;
 
@@ -219,6 +264,7 @@ public final class MTC
 		 * 
 		 * @param wpFN The enwp title to transfer
 		 * @param comFN The commons title to transfer to
+		 * @param isOwnWork Flag indicating if this file is own work.
 		 */
 		protected TransferFile(String wpFN, String comFN, boolean isOwnWork)
 		{
@@ -226,8 +272,12 @@ public final class MTC
 			this.wpFN = wpFN;
 			this.isOwnWork = isOwnWork;
 
+			System.out.println(comFN);
+			System.out.println(wpFN);
+			System.out.println(isOwnWork );
+			
 			String baseFN = enwp.nss(wpFN);
-			localFN = MStrings.fdump + baseFN.hashCode() + baseFN.substring(baseFN.lastIndexOf('.'));
+			localFN = mtcfiles.resolve(baseFN.hashCode() + baseFN.substring(baseFN.lastIndexOf('.')));
 		}
 		
 		/**
@@ -250,8 +300,8 @@ public final class MTC
 					return true;
 				}
 
-				return text != null && Utils.downloadFile(enwp.apiclient.client, imgInfoL.get(0).url.toString(), localFN)
-						&& com.upload(Paths.get(localFN), comFN, text, MStrings.tFrom)
+				return text != null && downloadFile(enwp.apiclient.client, imgInfoL.get(0).url.toString(), localFN)
+						&& com.upload(localFN, comFN, text, MStrings.tFrom)
 						&& enwp.edit(wpFN,
 								String.format("{{subst:ncd|%s|reviewer=%s}}%n", comFN, enwp.whoami())
 										+ enwp.getPageText(wpFN).replaceAll(mtcRegex, ""),
@@ -289,7 +339,7 @@ public final class MTC
 			});
 
 			// Filter Templates which are not on Commons
-			MQuery.exists(com, FL.toAL(masterTPL.stream().map(t -> com.convertIfNotInNS(t.title, NS.TEMPLATE)))).forEach((k, v) -> ctpCache.put(com.nss(k), v)); //TODO: implement cache
+			MQuery.exists(com, FL.toAL(masterTPL.stream().filter(t -> !ctpCache.containsKey(t.title)).map(t -> com.convertIfNotInNS(t.title, NS.TEMPLATE)))).forEach((k, v) -> ctpCache.put(com.nss(k), v));
 			masterTPL.removeIf(t -> {
 				if(ctpCache.containsKey(t.title) && !ctpCache.get(t.title))
 				{

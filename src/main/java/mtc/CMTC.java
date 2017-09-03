@@ -11,7 +11,7 @@ import fastily.jwiki.core.NS;
 import fastily.jwiki.core.Wiki;
 import fastily.jwiki.util.FL;
 import fastily.wpkit.util.FCLI;
-import fastily.wpkit.util.WikiGen;
+import fastily.wpkit.util.WGen;
 
 /**
  * Command line interface for MTC.
@@ -30,7 +30,7 @@ public class CMTC
 	{
 		CommandLine l = FCLI.gnuParse(makeOptList(), args, "MTC [-help] [-f] [-d] [-s] [<titles|user|cat>]");
 
-		Wiki wiki = WikiGen.wg.get("FSock", "en.wikipedia.org");
+		Wiki wiki = WGen.get("FSock", "en.wikipedia.org");
 		// Do initial logins, and generate MTC regexes
 		MTC mtc = new MTC(wiki);
 		mtc.useTrackingCat = false;
