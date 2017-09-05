@@ -42,9 +42,9 @@ public final class MTC
 	/**
 	 * Format String for Information template
 	 */
-	protected static String 	infoT = "{{Information\n|description=%s\n|source=%s\n|date=%s\n|"
+	protected static String infoT = "{{Information\n|description=%s\n|source=%s\n|date=%s\n|"
 			+ "author=%s\n|permission=%s\n|other_versions=%s\n}}\n";
-	
+
 	/**
 	 * Path pointing to temporary folder to store downloaded files.
 	 */
@@ -79,7 +79,7 @@ public final class MTC
 	 * Contains redirect data for license tags
 	 */
 	protected HashMap<String, String> tpMap = new HashMap<>();
-	
+
 	/**
 	 * Files with these categories should not be transferred.
 	 */
@@ -109,7 +109,7 @@ public final class MTC
 		com = enwp.getWiki("commons.wikimedia.org");
 
 		mtcRegex = WTP.mtc.getRegex(enwp);
-		
+
 		// Generate whitelist & blacklist
 		HashMap<String, ArrayList<String>> l = MQuery.getLinksOnPage(enwp,
 				FL.toSAL(MStrings.fullname + "/Blacklist", MStrings.fullname + "/Whitelist"));
@@ -119,7 +119,7 @@ public final class MTC
 		// Generate download directory
 		if (!Files.isDirectory(mtcfiles))
 			Files.createDirectory(mtcfiles);
-		
+
 		// Process template redirect data
 		for (String line : enwp.getPageText(MStrings.fullname + "/Redirects").split("\n"))
 			if (!line.startsWith("<") && !line.isEmpty())
@@ -144,16 +144,16 @@ public final class MTC
 		});
 
 		HashMap<String, ArrayList<String>> catL = MQuery.getCategoriesOnPage(enwp, titles);
-		
-		if(!ignoreFilter)
-		catL.forEach((k, v) -> {
-			if (v.stream().anyMatch(blacklist::contains) || !v.stream().anyMatch(whitelist::contains))
-				titles.remove(k);
-		});
+
+		if (!ignoreFilter)
+			catL.forEach((k, v) -> {
+				if (v.stream().anyMatch(blacklist::contains) || !v.stream().anyMatch(whitelist::contains))
+					titles.remove(k);
+			});
 
 		ArrayList<TransferFile> l = new ArrayList<>();
 		resolveFileNames(titles).forEach((k, v) -> l.add(new TransferFile(k, v, catL.get(k).contains("Category:Self-published work"))));
-		
+
 		return l;
 	}
 
@@ -184,7 +184,7 @@ public final class MTC
 
 		return m;
 	}
-	
+
 	/**
 	 * Downloads a file and saves it to disk.
 	 * 
@@ -230,19 +230,20 @@ public final class MTC
 		protected String wpFN;
 
 		/**
-		 * The commons filename 
+		 * The commons filename
 		 */
 		private String comFN;
-		
+
 		/**
 		 * The local path
 		 */
 		private Path localFN;
-		
+
 		/**
 		 * The summary and license sections.
 		 */
-		private StringBuilder sumSection = new StringBuilder("== {{int:filedesc}} ==\n"), licSection = new StringBuilder("\n== {{int:license-header}} ==\n");
+		private StringBuilder sumSection = new StringBuilder("== {{int:filedesc}} ==\n"),
+				licSection = new StringBuilder("\n== {{int:license-header}} ==\n");
 
 		/**
 		 * The list of old revisions for the file
@@ -272,14 +273,10 @@ public final class MTC
 			this.wpFN = wpFN;
 			this.isOwnWork = isOwnWork;
 
-			System.out.println(comFN);
-			System.out.println(wpFN);
-			System.out.println(isOwnWork );
-			
 			String baseFN = enwp.nss(wpFN);
 			localFN = mtcfiles.resolve(baseFN.hashCode() + baseFN.substring(baseFN.lastIndexOf('.')));
 		}
-		
+
 		/**
 		 * Attempts to transfer an enwp file to Commons
 		 * 
@@ -306,7 +303,8 @@ public final class MTC
 								String.format("{{subst:ncd|%s|reviewer=%s}}%n", comFN, enwp.whoami())
 										+ enwp.getPageText(wpFN).replaceAll(mtcRegex, ""),
 								MStrings.tTo)
-						&& ( !deleteOnTransfer || enwp.delete(wpFN, String.format("[[WP:CSD#F8|F8]]: Media file available on Commons: [[:%s]]", comFN)) );
+						&& (!deleteOnTransfer
+								|| enwp.delete(wpFN, String.format("[[WP:CSD#F8|F8]]: Media file available on Commons: [[:%s]]", comFN)));
 			}
 			catch (Throwable e)
 			{
@@ -326,22 +324,24 @@ public final class MTC
 			txt = txt.replaceAll("(?i)\\n?\\[\\[(Category:).*?\\]\\]", ""); // categories don't transfer well.
 			txt = txt.replaceAll("\\n?\\=\\=.*?\\=\\=\\n?", ""); // strip headers
 			txt = txt.replaceAll("(?si)\\{\\|\\s*?class\\=\"wikitable.+?\\|\\}", ""); // strip captions
-			
+
 			WikiText docRoot = WParser.parseText(enwp, txt);
 			ArrayList<WTemplate> masterTPL = docRoot.getTemplatesR();
-			
+
 			// Normalize template titles
 			masterTPL.forEach(t -> {
 				t.normalizeTitle(enwp);
-				
+
 				if (tpMap.containsKey(t.title))
 					t.title = tpMap.get(t.title);
 			});
 
 			// Filter Templates which are not on Commons
-			MQuery.exists(com, FL.toAL(masterTPL.stream().filter(t -> !ctpCache.containsKey(t.title)).map(t -> com.convertIfNotInNS(t.title, NS.TEMPLATE)))).forEach((k, v) -> ctpCache.put(com.nss(k), v));
+			MQuery.exists(com, FL.toAL(
+					masterTPL.stream().filter(t -> !ctpCache.containsKey(t.title)).map(t -> com.convertIfNotInNS(t.title, NS.TEMPLATE))))
+					.forEach((k, v) -> ctpCache.put(com.nss(k), v));
 			masterTPL.removeIf(t -> {
-				if(ctpCache.containsKey(t.title) && !ctpCache.get(t.title))
+				if (ctpCache.containsKey(t.title) && !ctpCache.get(t.title))
 				{
 					t.drop();
 					return true;
@@ -375,8 +375,8 @@ public final class MTC
 						break;
 					default:
 				}
-			
-			if(info != null)
+
+			if (info != null)
 			{
 				masterTPL.remove(info);
 				info.drop();
@@ -388,50 +388,51 @@ public final class MTC
 				licSection.append(String.format("%s%n", t));
 				t.drop();
 			});
-			
+
 			// fill-out an Information Template
-			sumSection.append(String.format(infoT, 
-					fuzzForParam(info, "Description", "") + docRoot.toString().trim(),
+			sumSection.append(String.format(infoT, fuzzForParam(info, "Description", "") + docRoot.toString().trim(),
 					fuzzForParam(info, "Source", isOwnWork ? "{{Own work by original uploader}}" : "").trim(),
 					fuzzForParam(info, "Date", "").trim(),
 					fuzzForParam(info, "Author", isOwnWork ? String.format("[[User:%s|%s]]", uploader, uploader) : "").trim(),
-					fuzzForParam(info, "Permission", "").trim(),
-					fuzzForParam(info, "Other_versions", "").trim()
-					));
-			
+					fuzzForParam(info, "Permission", "").trim(), fuzzForParam(info, "Other_versions", "").trim()));
+
 			// Work with text as String
 			String out = sumSection.toString() + licSection.toString();
 			out = out.replaceAll("(?<=\\[\\[)(.+?\\]\\])", "w:$1"); // add enwp prefix to links
 			out = out.replaceAll("(?i)\\[\\[(w::|w:w:)", "[[w:"); // Remove any double colons in interwiki links
 			out = out.replaceAll("\\n{3,}", "\n"); // Remove excessive spacing
-			
+
 			// Generate Upload Log Section
-				out += "\n== {{Original upload log}} ==\n" + String.format("{{Original file page|en.wikipedia|%s}}%n", enwp.nss(wpFN))
-						+ "{| class=\"wikitable\"\n! {{int:filehist-datetime}} !! {{int:filehist-dimensions}} !! {{int:filehist-user}} "
-						+ "!! {{int:filehist-comment}}";
+			out += "\n== {{Original upload log}} ==\n" + String.format("{{Original file page|en.wikipedia|%s}}%n", enwp.nss(wpFN))
+					+ "{| class=\"wikitable\"\n! {{int:filehist-datetime}} !! {{int:filehist-dimensions}} !! {{int:filehist-user}} "
+					+ "!! {{int:filehist-comment}}";
 
 			for (ImageInfo ii : imgInfoL)
-				out += String.format("%n|-%n| %s || %d × %d || [[w:User:%s|%s]] || ''<nowiki>%s</nowiki>''", StrUtil.iso8601dtf.format(LocalDateTime.ofInstant(ii.timestamp, ZoneOffset.UTC)),
-						ii.dimensions.x, ii.dimensions.y, ii.user, ii.user, ii.summary.replace("\n", " ").replace("  ", " "));
+				out += String.format("%n|-%n| %s || %d × %d || [[w:User:%s|%s]] || ''<nowiki>%s</nowiki>''",
+						StrUtil.iso8601dtf.format(LocalDateTime.ofInstant(ii.timestamp, ZoneOffset.UTC)), ii.dimensions.x, ii.dimensions.y,
+						ii.user, ii.user, ii.summary.replace("\n", " ").replace("  ", " "));
 			out += "\n|}\n\n{{Subst:Unc}}";
 
 			if (useTrackingCat)
 				out += "\n[[Category:Uploaded with MTC!]]";
-			
+
 			return out;
 		}
 
 		/**
 		 * Fuzz for a parameter in an Information template.
+		 * 
 		 * @param t The Information Template as a WTemplate
-		 * @param k The key to look for.  Use a capitalized form first.
+		 * @param k The key to look for. Use a capitalized form first.
 		 * @param defaultP The default String to return if {@code k} and its variations were not found in {@code t}
 		 * @return The parameter, as a String, or {@code defaultP} if the parameter could not be found.
 		 */
 		private String fuzzForParam(WTemplate t, String k, String defaultP)
 		{
 			String fzdKey = k;
-			return t != null && (t.has(fzdKey) || t.has(fzdKey = k.toLowerCase()) || t.has(fzdKey = fzdKey.replace('_', ' '))) ? t.get(fzdKey).toString() : defaultP;
+			return t != null && (t.has(fzdKey) || t.has(fzdKey = k.toLowerCase()) || t.has(fzdKey = fzdKey.replace('_', ' ')))
+					? t.get(fzdKey).toString()
+					: defaultP;
 		}
 	}
 }

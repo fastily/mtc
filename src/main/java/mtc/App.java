@@ -7,8 +7,6 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import fastily.jwiki.core.Wiki;
 import fastily.jwiki.util.FSystem;
-import fastily.wpkit.ui.FXTool;
-import fastily.wpkit.ui.LoginController;
 
 /**
  * A GUI wrapper for MTC
