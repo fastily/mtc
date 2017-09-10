@@ -17,6 +17,7 @@ import fastily.jwiki.core.NS;
 import fastily.jwiki.core.Wiki;
 import fastily.jwiki.dwrap.ImageInfo;
 import fastily.jwiki.util.FL;
+import fastily.jwiki.util.FSystem;
 import fastily.wpkit.text.StrUtil;
 import fastily.wpkit.text.WTP;
 import fastily.wpkit.tp.WParser;
@@ -51,9 +52,14 @@ public final class MTC
 	protected static Path mtcfiles = Paths.get((System.getProperty("os.name").contains("Windows") ? "" : "/tmp/") + "mtcfiles");
 
 	/**
+	 * The Wiki objects to use
+	 */
+	protected Wiki enwp = new Wiki("en.wikipedia.org"), com = new Wiki("commons.wikimedia.org");
+
+	/**
 	 * Regex matching Copy to Commons templates.
 	 */
-	protected String mtcRegex;
+	protected String mtcRegex = WTP.mtc.getRegex(enwp);
 
 	/**
 	 * Flag indicating whether this is a debug-mode/dry run (do not perform transfers)
@@ -91,25 +97,19 @@ public final class MTC
 	protected HashSet<String> whitelist;
 
 	/**
-	 * The Wiki objects to use
-	 */
-	protected Wiki enwp, com;
-
-	/**
 	 * Initializes the Wiki objects and download folders for MTC.
-	 * 
-	 * @param enwp A logged-in Wiki object, set to {@code en.wikipedia.org}
-	 * 
-	 * @throws Throwable On IO error
 	 */
-	protected MTC(Wiki enwp) throws Throwable
+	public MTC()
 	{
-		// Initialize Wiki objects
-		this.enwp = enwp;
-		com = enwp.getWiki("commons.wikimedia.org");
-
-		mtcRegex = WTP.mtc.getRegex(enwp);
-
+		this(false);
+	}
+	
+	/**
+	 * Creates an MTC object.
+	 * @param cliOnly Set true to disable download folder creation.  CAVEAT: This is only for read-only usage.
+	 */
+	public MTC(boolean cliOnly)
+	{
 		// Generate whitelist & blacklist
 		HashMap<String, ArrayList<String>> l = MQuery.getLinksOnPage(enwp,
 				FL.toSAL(MStrings.fullname + "/Blacklist", MStrings.fullname + "/Whitelist"));
@@ -117,8 +117,15 @@ public final class MTC
 		whitelist = new HashSet<>(l.get(MStrings.fullname + "/Whitelist"));
 
 		// Generate download directory
-		if (!Files.isDirectory(mtcfiles))
-			Files.createDirectory(mtcfiles);
+		try
+		{
+      		if (!cliOnly && !Files.isDirectory(mtcfiles))
+      			Files.createDirectory(mtcfiles);
+		}
+		catch(Throwable e)
+		{
+			FSystem.errAndExit(e, "Failed to create output folder.  Do you have write permissions?");
+		}
 
 		// Process template redirect data
 		for (String line : enwp.getPageText(MStrings.fullname + "/Redirects").split("\n"))
@@ -129,6 +136,26 @@ public final class MTC
 					tpMap.put(s, splits[0]);
 			}
 	}
+	
+	/**
+	 * Attempts login as the specified user.
+	 * @param user The username to login as
+	 * @param px The password to login with
+	 * @return True on success.
+	 */
+	public boolean login(String user, String px)
+	{
+		try
+		{
+			return enwp.login(user, px) && com.login(user, px);
+		}
+		catch(Throwable e)
+		{
+			e.printStackTrace();
+		}
+		
+		return false;
+	}
 
 	/**
 	 * Filters (if enabled) and resolves Commons filenames for transfer candidates
@@ -136,7 +163,7 @@ public final class MTC
 	 * @param titles The local files to transfer
 	 * @return An ArrayList of TransferObject objects.
 	 */
-	protected ArrayList<TransferFile> filterAndResolve(ArrayList<String> titles)
+	public ArrayList<TransferFile> filterAndResolve(ArrayList<String> titles)
 	{
 		MQuery.getSharedDuplicatesOf(enwp, titles).forEach((k, v) -> {
 			if (!v.isEmpty())
@@ -222,7 +249,7 @@ public final class MTC
 	 * @author Fastily
 	 *
 	 */
-	protected class TransferFile
+	public class TransferFile
 	{
 		/**
 		 * The enwp filename
@@ -259,6 +286,8 @@ public final class MTC
 		 * Flag indicating if this file is tagged as own work.
 		 */
 		private boolean isOwnWork;
+		
+		protected ArrayList<String> cats = new ArrayList<String>();
 
 		/**
 		 * Constructor, creates a TransferObject
@@ -324,7 +353,8 @@ public final class MTC
 			txt = txt.replaceAll("(?i)\\n?\\[\\[(Category:).*?\\]\\]", ""); // categories don't transfer well.
 			txt = txt.replaceAll("\\n?\\=\\=.*?\\=\\=\\n?", ""); // strip headers
 			txt = txt.replaceAll("(?si)\\{\\|\\s*?class\\=\"wikitable.+?\\|\\}", ""); // strip captions
-
+			txt = txt.replaceAll("(?si)\\{\\{(bots|nobots).*?\\}\\}", ""); // strip nobots
+			
 			WikiText docRoot = WParser.parseText(enwp, txt);
 			ArrayList<WTemplate> masterTPL = docRoot.getTemplatesR();
 
@@ -401,7 +431,7 @@ public final class MTC
 			out = out.replaceAll("(?<=\\[\\[)(.+?\\]\\])", "w:$1"); // add enwp prefix to links
 			out = out.replaceAll("(?i)\\[\\[(w::|w:w:)", "[[w:"); // Remove any double colons in interwiki links
 			out = out.replaceAll("\\n{3,}", "\n"); // Remove excessive spacing
-
+			
 			// Generate Upload Log Section
 			out += "\n== {{Original upload log}} ==\n" + String.format("{{Original file page|en.wikipedia|%s}}%n", enwp.nss(wpFN))
 					+ "{| class=\"wikitable\"\n! {{int:filehist-datetime}} !! {{int:filehist-dimensions}} !! {{int:filehist-user}} "
@@ -411,8 +441,14 @@ public final class MTC
 				out += String.format("%n|-%n| %s || %d × %d || [[w:User:%s|%s]] || ''<nowiki>%s</nowiki>''",
 						StrUtil.iso8601dtf.format(LocalDateTime.ofInstant(ii.timestamp, ZoneOffset.UTC)), ii.dimensions.x, ii.dimensions.y,
 						ii.user, ii.user, ii.summary.replace("\n", " ").replace("  ", " "));
-			out += "\n|}\n\n{{Subst:Unc}}";
+			out += "\n|}\n";
 
+			if(cats.isEmpty())
+				out += "\n{{Subst:Unc}}";
+			else
+				for(String s : cats)
+					out += String.format("\n[[%s]]", s);
+			
 			if (useTrackingCat)
 				out += "\n[[Category:Uploaded with MTC!]]";
 

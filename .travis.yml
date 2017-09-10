@@ -1,0 +1,17 @@
+dist: trusty
+sudo: false
+language: java
+
+before_install:
+  - git clone https://github.com/fastily/jwiki.git
+  - cd jwiki
+  - ./gradlew -x test build publishToMavenLocal
+  - cd ../
+  - git clone https://github.com/fastily/wpkit.git
+  - cd wpkit
+  - ./gradlew -x test build publishToMavenLocal
+  - cd ../
+
+notifications:
+  email: false
+  

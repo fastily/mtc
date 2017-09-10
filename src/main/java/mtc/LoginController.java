@@ -1,6 +1,7 @@
 package mtc;
 
-import fastily.jwiki.core.Wiki;
+import java.util.function.BiPredicate;
+
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -26,14 +27,15 @@ public class LoginController
 	public static final String fxmlLoc = "Login.fxml";
 
 	/**
-	 * The Wiki object which login will be attempted on. PRECONDITION: This must be set before using.
-	 */
-	private Wiki wiki;
-
-	/**
 	 * The method to run on a successful login. PRECONDITION: This must be set before using.
 	 */
 	private Runnable callback;
+
+	/**
+	 * Function used to verify credentials. Called by every login attempt. First parameter is username, second is
+	 * password. Return true to proceed.
+	 */
+	private BiPredicate<String, String> credTest;
 
 	/**
 	 * The username text field
@@ -54,15 +56,15 @@ public class LoginController
 	protected Button loginButton;
 
 	/**
-	 * Initializes data fields with the specified values. CAVEAT: This MUST be called before displaying the Login
-	 * screen.
+	 * Initializes data fields with the specified values. CAVEAT: This MUST be called before displaying the Login screen.
 	 * 
-	 * @param wiki The Wiki object to use
-	 * @param callback Will be executed on the FXML thread on successful login.
+	 * @param credTest Verifies credentials. Called by every login attempt. First parameter is username, second is
+	 *           password. Return true to proceed.
+	 * @param callback Executed on the FXML thread on successful login.
 	 */
-	public void initData(Wiki wiki, Runnable callback)
+	public void initData(BiPredicate<String, String> credTest, Runnable callback)
 	{
-		this.wiki = wiki;
+		this.credTest = credTest;
 		this.callback = callback;
 	}
 
@@ -110,11 +112,11 @@ public class LoginController
 		}
 
 		/**
-		 * Attempts to login
+		 * Attempt login
 		 */
 		public Boolean call()
 		{
-			return wiki.login(user, px);
+			return credTest.test(user, px);
 		}
 
 		/**
@@ -123,7 +125,7 @@ public class LoginController
 		public void succeeded()
 		{
 			if (!getValue())
-				FXTool.alertUser("Could not login. Please re-enter your credentials and/or verify that you are connected to the internet.",
+				FXTool.alertUser("Could not login. Please try again and/or verify that you are connected to the internet.",
 						Alert.AlertType.ERROR);
 			else
 			{

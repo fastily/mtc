@@ -30,9 +30,11 @@ public class CMTC
 	{
 		CommandLine l = FCLI.gnuParse(makeOptList(), args, "MTC [-help] [-f] [-d] [-s] [<titles|user|cat>]");
 
-		Wiki wiki = WGen.get("FSock", "en.wikipedia.org");
 		// Do initial logins, and generate MTC regexes
-		MTC mtc = new MTC(wiki);
+		MTC mtc = new MTC();
+		mtc.login("FSock", WGen.pxFor("FSock"));
+		Wiki wiki = mtc.enwp;
+		
 		mtc.useTrackingCat = false;
 		mtc.dryRun = l.hasOption('d');
 

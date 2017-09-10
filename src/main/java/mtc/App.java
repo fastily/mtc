@@ -5,7 +5,6 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import fastily.jwiki.core.Wiki;
 import fastily.jwiki.util.FSystem;
 
 /**
@@ -14,12 +13,12 @@ import fastily.jwiki.util.FSystem;
  * @author Fastily
  */
 public class App extends Application
-{
+{	
 	/**
-	 * The Wiki object to use.
+	 * The MTC object to use.
 	 */
-	private Wiki wiki = new Wiki("en.wikipedia.org");
-		
+	private MTC mtc = new MTC();
+
 	/**
 	 * Main Driver
 	 * 
@@ -36,50 +35,52 @@ public class App extends Application
 	public void start(Stage stage) throws Exception
 	{
 		// Check Version
-		String minVersion =  wiki.getPageText(MStrings.fullname + "/Version").trim();
-		if(!versionCheck(MStrings.version, minVersion))
+		String minVersion = mtc.enwp.getPageText(MStrings.fullname + "/Version").trim();
+		if (!versionCheck(MStrings.version, minVersion))
 		{
-			FXTool.warnUser(String.format("Your version of %s (%s) is outdated.  The current version is (%s), please download the newest version.", MStrings.name, MStrings.version, minVersion)); 
+			FXTool.warnUser(
+					String.format("Your version of %s (%s) is outdated.  The current version is (%s), please download the newest version.",
+							MStrings.name, MStrings.version, minVersion));
 			FXTool.launchBrowser(this, "https://en.wikipedia.org/wiki/" + MStrings.fullname);
 
 			Platform.exit();
 		}
-		
+
 		// Start Login Window
 		FXMLLoader lcLoader = FXTool.makeNewLoader(LoginController.fxmlLoc, LoginController.class);
 		stage.setScene(new Scene(lcLoader.load()));
-		
-		lcLoader.<LoginController>getController().initData(wiki, this::createAndShowMTC);
-				
+
+		lcLoader.<LoginController> getController().initData(mtc::login, this::createAndShowMTC);
+
 		stage.setTitle(MStrings.name);
 		stage.show();
 	}
-		
+
 	/**
-	 * Creates and shows the main MTC UI.  Also checks the minimum allowed version.
+	 * Creates and shows the main MTC UI. Also checks the minimum allowed version.
 	 * 
 	 * @param wiki The Wiki object to use with the UI
 	 */
 	private void createAndShowMTC()
 	{
 		FXMLLoader lcLoader = FXTool.makeNewLoader(MTCController.fxmlLoc, MTCController.class);
-		
-      Stage stage = new Stage();	
-      try
-      {
-      	stage.setScene(new Scene(lcLoader.load()));
-      }
-      catch(Throwable e)
-      {
-      	FSystem.errAndExit(e, "Should never reach here, is your FXML malformed or missing?");
-      }
-      
-      lcLoader.<MTCController>getController().initData(wiki);
-   
-      stage.setTitle(MStrings.name);
-      stage.show();
+
+		Stage stage = new Stage();
+		try
+		{
+			stage.setScene(new Scene(lcLoader.load()));
+		}
+		catch (Throwable e)
+		{
+			FSystem.errAndExit(e, "Should never reach here, is your FXML malformed or missing?");
+		}
+
+		lcLoader.<MTCController> getController().initData(mtc);
+
+		stage.setTitle(MStrings.name);
+		stage.show();
 	}
-	
+
 	/**
 	 * Checks the version String of a program with the version String of the server. PRECONDITION: {@code local} and
 	 * {@code minVersion} ONLY contain numbers and the '.' character.

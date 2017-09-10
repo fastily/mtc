@@ -3,6 +3,7 @@ package mtc;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -10,15 +11,14 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import mtc.MTC.TransferFile;
 import fastily.jwiki.core.NS;
 import fastily.jwiki.core.Wiki;
 import fastily.jwiki.util.FL;
-import fastily.jwiki.util.FSystem;
 
 /**
  * An MTC UI window
@@ -60,6 +60,12 @@ public class MTCController
 	protected TextField textInput;
 
 	/**
+	 * Input field for category
+	 */
+	@FXML
+	protected TextField catInput;
+	
+	/**
 	 * UI component toggling the smart filter
 	 */
 	@FXML
@@ -84,15 +90,9 @@ public class MTCController
 	protected Button startButton;
 
 	/**
-	 * Displays username in the upper right screen corner
-	 */
-	@FXML
-	protected Label userLabel;
-
-	/**
 	 * The Wiki objects to use with MTC.
 	 */
-	private Wiki wiki;
+	private Wiki enwp;
 
 	/**
 	 * The MTC instance for this Controller.
@@ -108,25 +108,15 @@ public class MTCController
 	 * Performs simple UI initialization using {@code wiki}. CAVEAT: This must be called before attempting to display the
 	 * MTC window.
 	 * 
-	 * @param wiki The Wiki for this controller to use.
+	 * @param enwp The Wiki for this controller to use.
 	 */
-	protected void initData(Wiki wiki)
+	protected void initData(MTC mtc)
 	{
-		this.wiki = wiki;
+		enwp = (this.mtc = mtc).enwp;
 
-		userLabel.setText("Hello, " + wiki.whoami());
+		printToConsole(String.format("Hello %s, welcome to MTC!%n", enwp.whoami()));
 		modeSelect.getItems().addAll(TransferMode.values());
-		deleteToggle.setDisable(!wiki.listUserRights(wiki.whoami()).contains("sysop"));
-
-		try
-		{
-			mtc = new MTC(wiki);
-		}
-		catch (Throwable e)
-		{
-			FXTool.warnUser("Are you missing filesystem Read/Write Permissions?");
-			FSystem.errAndExit(e, null);
-		}
+		deleteToggle.setDisable(!enwp.listUserRights(enwp.whoami()).contains("sysop"));
 	}
 
 	/**
@@ -244,35 +234,39 @@ public class MTCController
 			switch (mode)
 			{
 				case FILE:
-					fl = FL.toSAL(wiki.convertIfNotInNS(userInput, NS.FILE));
+					fl = FL.toSAL(enwp.convertIfNotInNS(userInput, NS.FILE));
 					break;
 				case CATEGORY:
-					fl = wiki.getCategoryMembers(wiki.convertIfNotInNS(userInput, NS.CATEGORY), NS.FILE);
+					fl = enwp.getCategoryMembers(enwp.convertIfNotInNS(userInput, NS.CATEGORY), NS.FILE);
 					break;
 				case USER:
-					fl = wiki.getUserUploads(wiki.nss(userInput));
+					fl = enwp.getUserUploads(enwp.nss(userInput));
 					break;
 				case TEMPLATE:
-					fl = wiki.whatTranscludesHere(wiki.convertIfNotInNS(userInput, NS.TEMPLATE), NS.FILE);
+					fl = enwp.whatTranscludesHere(enwp.convertIfNotInNS(userInput, NS.TEMPLATE), NS.FILE);
 					break;
 				case FILELINKS:
-					fl = wiki.getImagesOnPage(userInput);
+					fl = enwp.getImagesOnPage(userInput);
 					break;
 				case LINKS:
-					fl = wiki.getLinksOnPage(true, userInput, NS.FILE);
+					fl = enwp.getLinksOnPage(true, userInput, NS.FILE);
 					break;
 				default:
 					fl = new ArrayList<>();
 					break;
 			}
 
-			ArrayList<MTC.TransferFile> tol = mtc.filterAndResolve(fl);
+			ArrayList<TransferFile> tol = mtc.filterAndResolve(fl);
 			int tolSize = tol.size();
 
 			// Checkpoint - kill Task now if cancelled
 			if (isCancelled())
 				return null;
 
+			// Apply Category information
+			ArrayList<String> cats = FL.toAL(Arrays.stream(catInput.getText().split(";")).map(s -> enwp.convertIfNotInNS(s.trim(), NS.CATEGORY)));
+			tol.forEach(t -> t.cats = cats);
+			
 			updateMessage(String.format("[Total/Filtered/Eligible]: [%d/%d/%d]", fl.size(), fl.size() - tolSize, tolSize));
 
 			if (tol.isEmpty())
@@ -283,7 +277,7 @@ public class MTCController
 			else
 				for (int i = 0; i < tol.size() && !isCancelled(); i++)
 				{
-					MTC.TransferFile to = tol.get(i);
+					TransferFile to = tol.get(i);
 
 					updateProgress(i, tolSize);
 					updateMessage(String.format("Transfer [%d/%d]: %s", i, tolSize, to.wpFN));

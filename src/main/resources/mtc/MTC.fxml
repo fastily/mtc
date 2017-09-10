@@ -19,14 +19,14 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mtc.MTCController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mtc.MTCController">
    <bottom>
       <VBox alignment="CENTER" BorderPane.alignment="CENTER">
          <BorderPane.margin>
             <Insets bottom="2.0" left="5.0" right="5.0" />
          </BorderPane.margin>
          <children>
-            <TextArea fx:id="console" editable="false" prefHeight="200.0" prefWidth="200.0" text="Welcome to MTC!" wrapText="true">
+            <TextArea fx:id="console" editable="false" prefHeight="200.0" prefWidth="200.0" wrapText="true">
                <VBox.margin>
                   <Insets bottom="5.0" />
                </VBox.margin>
@@ -76,12 +76,7 @@
                   <Font size="24.0" />
                </font>
             </Label>
-            <HBox alignment="TOP_RIGHT" prefHeight="100.0" prefWidth="200.0" spacing="5.0" GridPane.columnIndex="3">
-               <children>
-                  <Label fx:id="userLabel" text="Hello" />
-               </children>
-            </HBox>
-            <TextField fx:id="textInput1" layoutX="171.0" layoutY="70.0" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="2">
+            <TextField fx:id="catInput" layoutX="171.0" layoutY="70.0" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="2">
                <GridPane.margin>
                   <Insets left="5.0" right="5.0" />
                </GridPane.margin>
