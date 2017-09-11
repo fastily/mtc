@@ -78,6 +78,12 @@ public class MTCController
 	protected CheckMenuItem deleteToggle;
 
 	/**
+	 * UI component toggling the addition of a maintenance category.
+	 */
+	@FXML
+	protected CheckMenuItem maintToggle;
+	
+	/**
 	 * The exit button in the menu
 	 */
 	@FXML
@@ -264,7 +270,11 @@ public class MTCController
 				return null;
 
 			// Apply Category information
-			ArrayList<String> cats = FL.toAL(Arrays.stream(catInput.getText().split(";")).map(s -> enwp.convertIfNotInNS(s.trim(), NS.CATEGORY)));
+			ArrayList<String> cats = new ArrayList<>();
+			if(!catInput.getText().trim().isEmpty())
+				Arrays.stream(catInput.getText().split(";")).map(s -> enwp.convertIfNotInNS(s.trim(), NS.CATEGORY)).forEach(cats::add);;
+			if(maintToggle.isSelected())
+				cats.add(String.format("Category:Files uploaded by %s with MTC! (check needed)", enwp.whoami()));
 			tol.forEach(t -> t.cats = cats);
 			
 			updateMessage(String.format("[Total/Filtered/Eligible]: [%d/%d/%d]", fl.size(), fl.size() - tolSize, tolSize));

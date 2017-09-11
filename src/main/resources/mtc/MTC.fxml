@@ -110,7 +110,7 @@
           <Menu mnemonicParsing="false" text="Options">
             <items>
                   <CheckMenuItem fx:id="filterToggle" mnemonicParsing="false" text="Disable Smart Filter" />
-                  <CheckMenuItem mnemonicParsing="false" text="Add Mainteance Category" />
+                  <CheckMenuItem fx:id="maintToggle" mnemonicParsing="false" text="Add Maintenance Category" />
                   <CheckMenuItem fx:id="deleteToggle" mnemonicParsing="false" text="Delete on Transfer" />
             </items>
           </Menu>

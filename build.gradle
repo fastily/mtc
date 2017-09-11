@@ -1,6 +1,10 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
+apply plugin: 'application'
+
+
+mainClassName = "mtc.App"
 
 repositories {
     mavenLocal()
@@ -23,7 +27,7 @@ task mtc(type: Jar) {
     attributes 'Main-Class': 'mtc.App'
   }
   
-  exclude "**/bots/**", "**/reports/**", "**/tools/**", "META-INF/*.SF", "**/LICENSE*", "**/NOTICE*", "**/maven/**"
+  exclude "META-INF/*.SF", "**/LICENSE*", "**/NOTICE*", "**/maven/**"
 
   with jar
 }

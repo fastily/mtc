@@ -103,10 +103,11 @@ public final class MTC
 	{
 		this(false);
 	}
-	
+
 	/**
 	 * Creates an MTC object.
-	 * @param cliOnly Set true to disable download folder creation.  CAVEAT: This is only for read-only usage.
+	 * 
+	 * @param cliOnly Set true to disable download folder creation. CAVEAT: This is only for read-only usage.
 	 */
 	public MTC(boolean cliOnly)
 	{
@@ -119,10 +120,10 @@ public final class MTC
 		// Generate download directory
 		try
 		{
-      		if (!cliOnly && !Files.isDirectory(mtcfiles))
-      			Files.createDirectory(mtcfiles);
+			if (!cliOnly && !Files.isDirectory(mtcfiles))
+				Files.createDirectory(mtcfiles);
 		}
-		catch(Throwable e)
+		catch (Throwable e)
 		{
 			FSystem.errAndExit(e, "Failed to create output folder.  Do you have write permissions?");
 		}
@@ -136,9 +137,10 @@ public final class MTC
 					tpMap.put(s, splits[0]);
 			}
 	}
-	
+
 	/**
 	 * Attempts login as the specified user.
+	 * 
 	 * @param user The username to login as
 	 * @param px The password to login with
 	 * @return True on success.
@@ -149,11 +151,11 @@ public final class MTC
 		{
 			return enwp.login(user, px) && com.login(user, px);
 		}
-		catch(Throwable e)
+		catch (Throwable e)
 		{
 			e.printStackTrace();
 		}
-		
+
 		return false;
 	}
 
@@ -286,8 +288,11 @@ public final class MTC
 		 * Flag indicating if this file is tagged as own work.
 		 */
 		private boolean isOwnWork;
-		
-		protected ArrayList<String> cats = new ArrayList<String>();
+
+		/**
+		 * Categories to add to the output text.
+		 */
+		protected ArrayList<String> cats;
 
 		/**
 		 * Constructor, creates a TransferObject
@@ -354,7 +359,7 @@ public final class MTC
 			txt = txt.replaceAll("\\n?\\=\\=.*?\\=\\=\\n?", ""); // strip headers
 			txt = txt.replaceAll("(?si)\\{\\|\\s*?class\\=\"wikitable.+?\\|\\}", ""); // strip captions
 			txt = txt.replaceAll("(?si)\\{\\{(bots|nobots).*?\\}\\}", ""); // strip nobots
-			
+
 			WikiText docRoot = WParser.parseText(enwp, txt);
 			ArrayList<WTemplate> masterTPL = docRoot.getTemplatesR();
 
@@ -431,7 +436,7 @@ public final class MTC
 			out = out.replaceAll("(?<=\\[\\[)(.+?\\]\\])", "w:$1"); // add enwp prefix to links
 			out = out.replaceAll("(?i)\\[\\[(w::|w:w:)", "[[w:"); // Remove any double colons in interwiki links
 			out = out.replaceAll("\\n{3,}", "\n"); // Remove excessive spacing
-			
+
 			// Generate Upload Log Section
 			out += "\n== {{Original upload log}} ==\n" + String.format("{{Original file page|en.wikipedia|%s}}%n", enwp.nss(wpFN))
 					+ "{| class=\"wikitable\"\n! {{int:filehist-datetime}} !! {{int:filehist-dimensions}} !! {{int:filehist-user}} "
@@ -443,12 +448,12 @@ public final class MTC
 						ii.user, ii.user, ii.summary.replace("\n", " ").replace("  ", " "));
 			out += "\n|}\n";
 
-			if(cats.isEmpty())
+			if (cats == null || cats.isEmpty())
 				out += "\n{{Subst:Unc}}";
 			else
-				for(String s : cats)
+				for (String s : cats)
 					out += String.format("\n[[%s]]", s);
-			
+
 			if (useTrackingCat)
 				out += "\n[[Category:Uploaded with MTC!]]";
 
