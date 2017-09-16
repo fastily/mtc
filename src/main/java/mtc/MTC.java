@@ -16,13 +16,13 @@ import fastily.jwiki.core.MQuery;
 import fastily.jwiki.core.NS;
 import fastily.jwiki.core.Wiki;
 import fastily.jwiki.dwrap.ImageInfo;
+import fastily.jwiki.tp.WParser;
+import fastily.jwiki.tp.WTemplate;
+import fastily.jwiki.tp.WikiText;
 import fastily.jwiki.util.FL;
 import fastily.jwiki.util.FSystem;
-import fastily.wpkit.text.StrUtil;
-import fastily.wpkit.text.WTP;
-import fastily.wpkit.tp.WParser;
-import fastily.wpkit.tp.WTemplate;
-import fastily.wpkit.tp.WikiText;
+import fastily.wpkit.WTP;
+import fastily.wpkit.WikiX;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -444,7 +444,7 @@ public final class MTC
 
 			for (ImageInfo ii : imgInfoL)
 				out += String.format("%n|-%n| %s || %d × %d || [[w:User:%s|%s]] || ''<nowiki>%s</nowiki>''",
-						StrUtil.iso8601dtf.format(LocalDateTime.ofInstant(ii.timestamp, ZoneOffset.UTC)), ii.dimensions.x, ii.dimensions.y,
+						WikiX.iso8601dtf.format(LocalDateTime.ofInstant(ii.timestamp, ZoneOffset.UTC)), ii.dimensions.x, ii.dimensions.y,
 						ii.user, ii.user, ii.summary.replace("\n", " ").replace("  ", " "));
 			out += "\n|}\n";
 

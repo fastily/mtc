@@ -10,8 +10,8 @@ import fastily.jwiki.core.ColorLog;
 import fastily.jwiki.core.NS;
 import fastily.jwiki.core.Wiki;
 import fastily.jwiki.util.FL;
-import fastily.wpkit.util.FCLI;
-import fastily.wpkit.util.WGen;
+import fastily.jwiki.util.WGen;
+import fastily.wpkit.FCLI;
 
 /**
  * Command line interface for MTC.
