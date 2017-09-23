@@ -28,13 +28,13 @@ public class CMTC
 	 */
 	public static void main(String[] args) throws Throwable
 	{
-		CommandLine l = FCLI.gnuParse(makeOptList(), args, "MTC [-help] [-f] [-d] [-s] [<titles|user|cat>]");
+		CommandLine l = FCLI.gnuParse(makeOptList(), args, "MTC [-help] [-f] [-d] [<titles|user|cat>]");
 
 		// Do initial logins, and generate MTC regexes
 		MTC mtc = new MTC();
 		mtc.login("FSock", WGen.pxFor("FSock"));
 		Wiki wiki = mtc.enwp;
-		
+
 		mtc.useTrackingCat = false;
 		mtc.dryRun = l.hasOption('d');
 
@@ -42,21 +42,19 @@ public class CMTC
 			mtc.ignoreFilter = true;
 
 		ArrayList<String> fl = new ArrayList<>();
-		if (l.hasOption('s'))
-			fl = wiki.getLinksOnPage(String.format("User:%s/MTCSources/List", wiki.whoami()), NS.FILE);
-		else
-			for (String s : l.getArgs())
-			{				
-				NS ns = wiki.whichNS(s);
-				if (ns.equals(NS.FILE))
-					fl.add(s);
-				else if (ns.equals(NS.CATEGORY))
-					fl.addAll(wiki.getCategoryMembers(s, NS.FILE));
-				else if (ns.equals(NS.TEMPLATE))
-					fl.addAll(wiki.whatTranscludesHere(s, NS.FILE));
-				else
-					fl.addAll(wiki.getUserUploads(s));
-			}
+
+		for (String s : l.getArgs())
+		{
+			NS ns = wiki.whichNS(s);
+			if (ns.equals(NS.FILE))
+				fl.add(s);
+			else if (ns.equals(NS.CATEGORY))
+				fl.addAll(wiki.getCategoryMembers(s, NS.FILE));
+			else if (ns.equals(NS.TEMPLATE))
+				fl.addAll(wiki.whatTranscludesHere(s, NS.FILE));
+			else
+				fl.addAll(wiki.getUserUploads(s));
+		}
 
 		ArrayList<MTC.TransferFile> tl = mtc.filterAndResolve(fl);
 		int total = tl.size();
@@ -79,7 +77,6 @@ public class CMTC
 	{
 		Options ol = FCLI.makeDefaultOptions();
 		ol.addOption("f", "Force (ignore filter) file transfer(s)");
-		ol.addOption("s", "Use current user's MTC Sources Page - overrides other source input methods");
 		ol.addOption("d", "Activate dry run/debug mode (does not transfer files)");
 		return ol;
 	}

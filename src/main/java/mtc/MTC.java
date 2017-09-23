@@ -22,7 +22,6 @@ import fastily.jwiki.tp.WikiText;
 import fastily.jwiki.util.FL;
 import fastily.jwiki.util.FSystem;
 import fastily.wpkit.WTP;
-import fastily.wpkit.WikiX;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -39,12 +38,6 @@ public final class MTC
 	 * Cache of whether a Template exists on Commons.
 	 */
 	protected static HashMap<String, Boolean> ctpCache = new HashMap<>();
-
-	/**
-	 * Format String for Information template
-	 */
-	protected static String infoT = "{{Information\n|description=%s\n|source=%s\n|date=%s\n|"
-			+ "author=%s\n|permission=%s\n|other_versions=%s\n}}\n";
 
 	/**
 	 * Path pointing to temporary folder to store downloaded files.
@@ -425,7 +418,9 @@ public final class MTC
 			});
 
 			// fill-out an Information Template
-			sumSection.append(String.format(infoT, fuzzForParam(info, "Description", "") + docRoot.toString().trim(),
+			sumSection.append(String.format("{{Information\n|description=%s\n|source=%s\n|date=%s\n|"
+					+ "author=%s\n|permission=%s\n|other_versions=%s\n}}\n", 
+					fuzzForParam(info, "Description", "") + docRoot.toString().trim(),
 					fuzzForParam(info, "Source", isOwnWork ? "{{Own work by original uploader}}" : "").trim(),
 					fuzzForParam(info, "Date", "").trim(),
 					fuzzForParam(info, "Author", isOwnWork ? String.format("[[User:%s|%s]]", uploader, uploader) : "").trim(),
@@ -444,7 +439,7 @@ public final class MTC
 
 			for (ImageInfo ii : imgInfoL)
 				out += String.format("%n|-%n| %s || %d × %d || [[w:User:%s|%s]] || ''<nowiki>%s</nowiki>''",
-						WikiX.iso8601dtf.format(LocalDateTime.ofInstant(ii.timestamp, ZoneOffset.UTC)), ii.dimensions.x, ii.dimensions.y,
+						FSystem.iso8601dtf.format(LocalDateTime.ofInstant(ii.timestamp, ZoneOffset.UTC)), ii.dimensions.x, ii.dimensions.y,
 						ii.user, ii.user, ii.summary.replace("\n", " ").replace("  ", " "));
 			out += "\n|}\n";
 
