@@ -21,7 +21,6 @@ import fastily.jwiki.tp.WTemplate;
 import fastily.jwiki.tp.WikiText;
 import fastily.jwiki.util.FL;
 import fastily.jwiki.util.FSystem;
-import fastily.wpkit.WTP;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -52,7 +51,7 @@ public final class MTC
 	/**
 	 * Regex matching Copy to Commons templates.
 	 */
-	protected String mtcRegex = WTP.mtc.getRegex(enwp);
+	protected String mtcRegex;
 
 	/**
 	 * Flag indicating whether this is a debug-mode/dry run (do not perform transfers)
@@ -88,6 +87,11 @@ public final class MTC
 	 * Files must be members of at least one of the following categories to be eligible for transfer.
 	 */
 	protected HashSet<String> whitelist;
+
+	/**
+	 * Generic http client for downloading files
+	 */
+	private OkHttpClient httpClient = new OkHttpClient();
 
 	/**
 	 * Initializes the Wiki objects and download folders for MTC.
@@ -129,6 +133,11 @@ public final class MTC
 				for (String s : splits)
 					tpMap.put(s, splits[0]);
 			}
+
+		// Setup mtcRegex
+		ArrayList<String> rtl = enwp.nss(enwp.whatLinksHere("Template:Copy to Wikimedia Commons", true));
+		rtl.add("Copy to Wikimedia Commons");
+		mtcRegex = "(?si)\\{\\{(" + FL.pipeFence(rtl).replace(" ", "( |_)") + ")\\}\\}\\n?";
 	}
 
 	/**
@@ -324,7 +333,7 @@ public final class MTC
 					return true;
 				}
 
-				return text != null && downloadFile(enwp.apiclient.client, imgInfoL.get(0).url.toString(), localFN)
+				return text != null && downloadFile(httpClient, imgInfoL.get(0).url.toString(), localFN)
 						&& com.upload(localFN, comFN, text, MStrings.tFrom)
 						&& enwp.edit(wpFN,
 								String.format("{{subst:ncd|%s|reviewer=%s}}%n", comFN, enwp.whoami())
@@ -418,8 +427,8 @@ public final class MTC
 			});
 
 			// fill-out an Information Template
-			sumSection.append(String.format("{{Information\n|description=%s\n|source=%s\n|date=%s\n|"
-					+ "author=%s\n|permission=%s\n|other_versions=%s\n}}\n", 
+			sumSection.append(String.format(
+					"{{Information\n|description=%s\n|source=%s\n|date=%s\n|" + "author=%s\n|permission=%s\n|other_versions=%s\n}}\n",
 					fuzzForParam(info, "Description", "") + docRoot.toString().trim(),
 					fuzzForParam(info, "Source", isOwnWork ? "{{Own work by original uploader}}" : "").trim(),
 					fuzzForParam(info, "Date", "").trim(),

@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    compile 'fastily:wpkit:0.0.1'
+    compile 'fastily:wpkit:0.0.2'
 }
 
 task mtc(type: Jar) {

@@ -11,7 +11,7 @@ public class MStrings
 	/**
 	 * Version number
 	 */
-	protected static final String version = "1.1.0";
+	protected static final String version = "1.1.1";
 
 	/**
 	 * Short name for MTC!
