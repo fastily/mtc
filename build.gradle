@@ -12,7 +12,8 @@ repositories {
 }
 
 dependencies {
-    compile 'fastily:wpkit:0.0.2'
+    compile "info.picocli:picocli:1.0.1"
+    compile "fastily:jwiki:1.4.1"
 }
 
 task mtc(type: Jar) {

@@ -137,7 +137,7 @@ public final class MTC
 		// Setup mtcRegex
 		ArrayList<String> rtl = enwp.nss(enwp.whatLinksHere("Template:Copy to Wikimedia Commons", true));
 		rtl.add("Copy to Wikimedia Commons");
-		mtcRegex = "(?si)\\{\\{(" + FL.pipeFence(rtl).replace(" ", "( |_)") + ")\\}\\}\\n?";
+		mtcRegex = "(?si)\\{\\{(" + FL.pipeFence(rtl) + ").*?\\}\\}";
 	}
 
 	/**
@@ -271,6 +271,11 @@ public final class MTC
 		private Path localFN;
 
 		/**
+		 * Cached file description text on enwp.
+		 */
+		private String enwpText;
+
+		/**
 		 * The summary and license sections.
 		 */
 		private StringBuilder sumSection = new StringBuilder("== {{int:filedesc}} ==\n"),
@@ -335,10 +340,7 @@ public final class MTC
 
 				return text != null && downloadFile(httpClient, imgInfoL.get(0).url.toString(), localFN)
 						&& com.upload(localFN, comFN, text, MStrings.tFrom)
-						&& enwp.edit(wpFN,
-								String.format("{{subst:ncd|%s|reviewer=%s}}%n", comFN, enwp.whoami())
-										+ enwp.getPageText(wpFN).replaceAll(mtcRegex, ""),
-								MStrings.tTo)
+						&& enwp.edit(wpFN, String.format("{{subst:ncd|%s|reviewer=%s}}%n", comFN, enwp.whoami()) + enwpText, MStrings.tTo)
 						&& (!deleteOnTransfer
 								|| enwp.delete(wpFN, String.format("[[WP:CSD#F8|F8]]: Media file available on Commons: [[:%s]]", comFN)));
 			}
@@ -356,6 +358,10 @@ public final class MTC
 		{
 			// preprocess text
 			String txt = enwp.getPageText(wpFN);
+			txt = txt.replaceAll(mtcRegex, ""); // strip copy to commons
+
+			enwpText = new String(txt); // cache description page text
+
 			txt = txt.replaceAll("(?s)\\<!\\-\\-.*?\\-\\-\\>", ""); // strip comments
 			txt = txt.replaceAll("(?i)\\n?\\[\\[(Category:).*?\\]\\]", ""); // categories don't transfer well.
 			txt = txt.replaceAll("\\n?\\=\\=.*?\\=\\=\\n?", ""); // strip headers
@@ -428,7 +434,7 @@ public final class MTC
 
 			// fill-out an Information Template
 			sumSection.append(String.format(
-					"{{Information\n|description=%s\n|source=%s\n|date=%s\n|" + "author=%s\n|permission=%s\n|other_versions=%s\n}}\n",
+					"{{Information\n|description=%s\n|source=%s\n|date=%s\n|author=%s\n|permission=%s\n|other_versions=%s\n}}\n",
 					fuzzForParam(info, "Description", "") + docRoot.toString().trim(),
 					fuzzForParam(info, "Source", isOwnWork ? "{{Own work by original uploader}}" : "").trim(),
 					fuzzForParam(info, "Date", "").trim(),

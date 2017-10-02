@@ -3,15 +3,16 @@ package mtc;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Options;
-
 import fastily.jwiki.core.ColorLog;
 import fastily.jwiki.core.NS;
 import fastily.jwiki.core.Wiki;
 import fastily.jwiki.util.FL;
 import fastily.jwiki.util.WGen;
-import fastily.wpkit.FCLI;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
+import picocli.CommandLine.Help.ColorScheme;
 
 /**
  * Command line interface for MTC.
@@ -19,8 +20,41 @@ import fastily.wpkit.FCLI;
  * @author Fastily
  *
  */
+@Command(name="CMTC", description="The Commandline interface for MTC!")
 public class CMTC
 {
+	/**
+	 * Flag which causes smart filter to be ignored.
+	 */
+	@Option(names= {"-f"}, description="Force (ignore filter) file transfer(s)")
+	private boolean ignoreFilter;
+	
+	/**
+	 * Flag which enables dry run mode.
+	 */
+	@Option(names= {"-d"}, description="Activate dry run/debug mode (does not transfer files)")
+	private boolean dryRun;
+	
+	/**
+	 * Flag which triggers help output
+	 */
+	@Option(names= {"-h"}, usageHelp=true, description="Print this message and exit")
+	private boolean helpRequested;
+	
+	/**
+	 * Injected List which contains non-option elements - files, usernames, or categories.
+	 */
+	@Parameters(paramLabel="titles", description="Files, usernames, or categories")
+	private ArrayList<String> l;
+	
+	/**
+	 * No public constructors.
+	 */
+	private CMTC()
+	{
+		
+	}
+	
 	/**
 	 * Main driver
 	 * 
@@ -28,22 +62,24 @@ public class CMTC
 	 */
 	public static void main(String[] args) throws Throwable
 	{
-		CommandLine l = FCLI.gnuParse(makeOptList(), args, "MTC [-help] [-f] [-d] [<titles|user|cat>]");
-
-		// Do initial logins, and generate MTC regexes
+		CMTC cmtc = CommandLine.populateCommand(new CMTC(), args);
+		if(cmtc.helpRequested || cmtc.l == null)
+		{
+			CommandLine.usage(cmtc, System.out, new ColorScheme(CommandLine.Help.Ansi.ON));
+			return;
+		}
+		
 		MTC mtc = new MTC();
 		mtc.login("FSock", WGen.pxFor("FSock"));
+		
+		mtc.useTrackingCat = false;
+		mtc.dryRun = cmtc.dryRun;
+		mtc.ignoreFilter = cmtc.ignoreFilter;
+		
 		Wiki wiki = mtc.enwp;
 
-		mtc.useTrackingCat = false;
-		mtc.dryRun = l.hasOption('d');
-
-		if (l.hasOption('f'))
-			mtc.ignoreFilter = true;
-
 		ArrayList<String> fl = new ArrayList<>();
-
-		for (String s : l.getArgs())
+		for (String s : cmtc.l)
 		{
 			NS ns = wiki.whichNS(s);
 			if (ns.equals(NS.FILE))
@@ -66,18 +102,5 @@ public class CMTC
 		}).map(to -> to.wpFN));
 
 		System.out.printf("Task complete, with %d failures: %s%n", fails.size(), fails);
-	}
-
-	/**
-	 * Makes the list of CLI options.
-	 * 
-	 * @return The list of CommandLine options.
-	 */
-	private static Options makeOptList()
-	{
-		Options ol = FCLI.makeDefaultOptions();
-		ol.addOption("f", "Force (ignore filter) file transfer(s)");
-		ol.addOption("d", "Activate dry run/debug mode (does not transfer files)");
-		return ol;
 	}
 }
