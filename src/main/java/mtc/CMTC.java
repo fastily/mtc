@@ -12,7 +12,6 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
-import picocli.CommandLine.Help.ColorScheme;
 
 /**
  * Command line interface for MTC.
@@ -38,7 +37,7 @@ public class CMTC
 	/**
 	 * Flag which triggers help output
 	 */
-	@Option(names= {"-h"}, usageHelp=true, description="Print this message and exit")
+	@Option(names= {"-h", "--help"}, usageHelp=true, description="Print this message and exit")
 	private boolean helpRequested;
 	
 	/**
@@ -48,7 +47,7 @@ public class CMTC
 	private ArrayList<String> l;
 	
 	/**
-	 * No public constructors.
+	 * No public constructors
 	 */
 	private CMTC()
 	{
@@ -63,9 +62,9 @@ public class CMTC
 	public static void main(String[] args) throws Throwable
 	{
 		CMTC cmtc = CommandLine.populateCommand(new CMTC(), args);
-		if(cmtc.helpRequested || cmtc.l == null)
+		if(cmtc.helpRequested || cmtc.l == null || cmtc.l.isEmpty())
 		{
-			CommandLine.usage(cmtc, System.out, new ColorScheme(CommandLine.Help.Ansi.ON));
+			CommandLine.usage(cmtc, System.out);
 			return;
 		}
 		
