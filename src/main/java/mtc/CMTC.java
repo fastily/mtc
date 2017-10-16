@@ -43,7 +43,7 @@ public class CMTC
 	/**
 	 * Injected List which contains non-option elements - files, usernames, or categories.
 	 */
-	@Parameters(paramLabel="titles", description="Files, usernames, or categories")
+	@Parameters(paramLabel="titles", description="Files, usernames, templates, or categories")
 	private ArrayList<String> l;
 	
 	/**

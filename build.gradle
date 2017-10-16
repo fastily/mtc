@@ -18,7 +18,7 @@ dependencies {
 
 task mtc(type: Jar) {
   baseName = "MTC"
-  version = "1.1.0"
+  version = "1.1.1"
 
   from {
     configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
@@ -26,6 +26,23 @@ task mtc(type: Jar) {
 
   manifest {
     attributes 'Main-Class': 'mtc.App'
+  }
+  
+  exclude "META-INF/*.SF", "**/LICENSE*", "**/NOTICE*", "**/maven/**"
+
+  with jar
+}
+
+task cmtc(type: Jar) {
+  baseName = "CMTC"
+  version = "1.1.1"
+
+  from {
+    configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+  }
+
+  manifest {
+    attributes 'Main-Class': 'mtc.CMTC'
   }
   
   exclude "META-INF/*.SF", "**/LICENSE*", "**/NOTICE*", "**/maven/**"
