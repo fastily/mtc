@@ -6,17 +6,12 @@
 MTC! is a tool that helps simplify and automate the file transfers from Wikipedia to Commons.
 
 #### Build
-First, clone [jwiki](https://github.com/fastily/jwiki) and publish it to your local maven repository:
+First, clone [jwiki](https://github.com/fastily/jwiki), build, and publish it to your local maven repository:
 ```bash
 ./gradlew -x test build publishToMavenLocal
 ```
 
-Next, clone [wpkit](https://github.com/fastily/wpkit) and publish it to your local maven repository:
-```bash
-./gradlew build publishToMavenLocal
-```
-
-Finally, clone and build this project with:
+Then, clone and build this project with:
 ```bash
 ./gradlew build mtc
 ```

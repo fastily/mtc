@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -68,6 +69,11 @@ public final class MTC
 	 */
 	protected boolean useTrackingCat = true;
 
+	/**
+	 * Flag indicating whether transferred files should include the check needed category.
+	 */
+	protected boolean useCheckNeededCat = false;
+	
 	/**
 	 * Flag indicating whether we should attempt deletion on successful transfer.
 	 */
@@ -162,12 +168,13 @@ public final class MTC
 	}
 
 	/**
-	 * Filters (if enabled) and resolves Commons filenames for transfer candidates
+	 * Creates TransferFile obejcts from a List of titles. Also filters (if enabled) and auto-resolves Commons filenames
+	 * for transfer candidates.
 	 * 
-	 * @param titles The local files to transfer
+	 * @param titles The List of enwp files to transfer
 	 * @return An ArrayList of TransferObject objects.
 	 */
-	public ArrayList<TransferFile> filterAndResolve(ArrayList<String> titles)
+	public ArrayList<TransferFile> makeTransferFile(ArrayList<String> titles)
 	{
 		MQuery.getSharedDuplicatesOf(enwp, titles).forEach((k, v) -> {
 			if (!v.isEmpty())
@@ -175,7 +182,6 @@ public final class MTC
 		});
 
 		HashMap<String, ArrayList<String>> catL = MQuery.getCategoriesOnPage(enwp, titles);
-
 		if (!ignoreFilter)
 			catL.forEach((k, v) -> {
 				if (v.stream().anyMatch(blacklist::contains) || !v.stream().anyMatch(whitelist::contains))
@@ -183,24 +189,9 @@ public final class MTC
 			});
 
 		ArrayList<TransferFile> l = new ArrayList<>();
-		resolveFileNames(titles).forEach((k, v) -> l.add(new TransferFile(k, v, catL.get(k).contains("Category:Self-published work"))));
-
-		return l;
-	}
-
-	/**
-	 * Find available file names on Commons for each enwp file. The enwp filename will be returned if it is free on
-	 * Commons, otherwise it will be permuted.
-	 * 
-	 * @param l The list of enwp files to find a Commons filename for
-	 * @return The Map such that [ enwp_filename : commons_filename ]
-	 */
-	private HashMap<String, String> resolveFileNames(ArrayList<String> l)
-	{
-		HashMap<String, String> m = new HashMap<>();
-		MQuery.exists(com, l).forEach((k, v) -> {
+		MQuery.exists(com, titles).forEach((k, v) -> {
 			if (!v)
-				m.put(k, k);
+				l.add(new TransferFile(k, k, catL.get(k)));
 			else
 			{
 				String comFN;
@@ -209,11 +200,11 @@ public final class MTC
 					comFN = new StringBuilder(k).insert(k.lastIndexOf('.'), " " + Math.round(Math.random() * 1000)).toString();
 				} while (com.exists(comFN)); // loop until available filename is found
 
-				m.put(k, comFN);
+				l.add(new TransferFile(k, comFN, catL.get(k)));
 			}
 		});
 
-		return m;
+		return l;
 	}
 
 	/**
@@ -299,31 +290,43 @@ public final class MTC
 		/**
 		 * Categories to add to the output text.
 		 */
-		protected ArrayList<String> cats;
+		private ArrayList<String> cats = new ArrayList<>();
 
 		/**
 		 * Constructor, creates a TransferObject
 		 * 
 		 * @param wpFN The enwp title to transfer
 		 * @param comFN The commons title to transfer to
-		 * @param isOwnWork Flag indicating if this file is own work.
+		 * @param enwpCats List of categories on the enwp file description page
 		 */
-		protected TransferFile(String wpFN, String comFN, boolean isOwnWork)
+		private TransferFile(String wpFN, String comFN, ArrayList<String> enwpCats)
 		{
 			this.comFN = comFN;
 			this.wpFN = wpFN;
-			this.isOwnWork = isOwnWork;
+			this.isOwnWork = enwpCats.contains("Category:Self-published work");
 
 			String baseFN = enwp.nss(wpFN);
 			localFN = mtcfiles.resolve(baseFN.hashCode() + baseFN.substring(baseFN.lastIndexOf('.')));
+			
+			if(useCheckNeededCat)
+				cats.add(String.format("Category:Files uploaded by %s with MTC! (check needed)", enwp.whoami()));
 		}
 
+		/**
+		 * Adds categories which will be applied to transferred files.
+		 * @param catL The categories to add.
+		 */
+		public void addCat(String...catL)
+		{
+			cats.addAll(Arrays.asList(catL));
+		}
+		
 		/**
 		 * Attempts to transfer an enwp file to Commons
 		 * 
 		 * @return True on success.
 		 */
-		protected boolean doTransfer()
+		public boolean doTransfer()
 		{
 			try
 			{
@@ -458,11 +461,12 @@ public final class MTC
 						ii.user, ii.user, ii.summary.replace("\n", " ").replace("  ", " "));
 			out += "\n|}\n";
 
-			if (cats == null || cats.isEmpty())
+			// Fill in cats
+			if (cats.isEmpty())
 				out += "\n{{Subst:Unc}}";
 			else
 				for (String s : cats)
-					out += String.format("\n[[%s]]", s);
+					out += String.format("\n[[%s]]", com.convertIfNotInNS(s, NS.CATEGORY));
 
 			if (useTrackingCat)
 				out += "\n[[Category:Uploaded with MTC!]]";

@@ -8,6 +8,7 @@ import fastily.jwiki.core.NS;
 import fastily.jwiki.core.Wiki;
 import fastily.jwiki.util.FL;
 import fastily.jwiki.util.WGen;
+import mtc.MTC.TransferFile;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -19,41 +20,53 @@ import picocli.CommandLine.Parameters;
  * @author Fastily
  *
  */
-@Command(name="CMTC", description="The Commandline interface for MTC!")
+@Command(name = "CMTC", description = "The Commandline interface for MTC!")
 public class CMTC
 {
 	/**
 	 * Flag which causes smart filter to be ignored.
 	 */
-	@Option(names= {"-f"}, description="Force (ignore filter) file transfer(s)")
+	@Option(names = { "-f" }, description = "Force (ignore filter) file transfer(s)")
 	private boolean ignoreFilter;
-	
+
 	/**
 	 * Flag which enables dry run mode.
 	 */
-	@Option(names= {"-d"}, description="Activate dry run/debug mode (does not transfer files)")
+	@Option(names = { "-d" }, description = "Activate dry run/debug mode (does not transfer files)")
 	private boolean dryRun;
-	
+
+	/**
+	 * Parameter which causes the specified category to be added to transferred files.
+	 */
+	@Option(names = { "-c", "--cat" }, description = "Applies the specified category to transfered files")
+	private String cat;
+
+	/**
+	 * Flag which causes a check-needed category to be added to transferred files.
+	 */
+	@Option(names = { "-k", "--checkcat" }, description = "Adds the check needed category to transferred files")
+	private boolean addCheckCat;
+
 	/**
 	 * Flag which triggers help output
 	 */
-	@Option(names= {"-h", "--help"}, usageHelp=true, description="Print this message and exit")
+	@Option(names = { "-h", "--help" }, usageHelp = true, description = "Print this message and exit")
 	private boolean helpRequested;
-	
+
 	/**
 	 * Injected List which contains non-option elements - files, usernames, or categories.
 	 */
-	@Parameters(paramLabel="titles", description="Files, usernames, templates, or categories")
+	@Parameters(paramLabel = "titles", description = "Files, usernames, templates, or categories")
 	private ArrayList<String> l;
-	
+
 	/**
 	 * No public constructors
 	 */
 	private CMTC()
 	{
-		
+
 	}
-	
+
 	/**
 	 * Main driver
 	 * 
@@ -62,19 +75,20 @@ public class CMTC
 	public static void main(String[] args) throws Throwable
 	{
 		CMTC cmtc = CommandLine.populateCommand(new CMTC(), args);
-		if(cmtc.helpRequested || cmtc.l == null || cmtc.l.isEmpty())
+		if (cmtc.helpRequested || cmtc.l == null || cmtc.l.isEmpty())
 		{
 			CommandLine.usage(cmtc, System.out);
 			return;
 		}
-		
+
 		MTC mtc = new MTC();
 		mtc.login("FSock", WGen.pxFor("FSock"));
-		
+
 		mtc.useTrackingCat = false;
 		mtc.dryRun = cmtc.dryRun;
 		mtc.ignoreFilter = cmtc.ignoreFilter;
-		
+		mtc.useCheckNeededCat = cmtc.addCheckCat;
+
 		Wiki wiki = mtc.enwp;
 
 		ArrayList<String> fl = new ArrayList<>();
@@ -91,7 +105,12 @@ public class CMTC
 				fl.addAll(wiki.getUserUploads(s));
 		}
 
-		ArrayList<MTC.TransferFile> tl = mtc.filterAndResolve(fl);
+		ArrayList<TransferFile> tl = mtc.makeTransferFile(fl);
+
+		if (cmtc.cat != null)
+			for (TransferFile t : tl)
+				t.addCat(cmtc.cat);
+
 		int total = tl.size();
 		AtomicInteger i = new AtomicInteger();
 

@@ -3,7 +3,6 @@ package mtc;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -200,6 +199,7 @@ public class MTCController
 
 			mtc.ignoreFilter = filterToggle.isSelected();
 			mtc.deleteOnTransfer = deleteToggle.isSelected();
+			mtc.useCheckNeededCat = maintToggle.isSelected();
 
 			messageProperty().addListener((obv, o, n) -> printToConsole(n));
 			stateProperty().addListener((obv, o, n) -> {
@@ -262,7 +262,7 @@ public class MTCController
 					break;
 			}
 
-			ArrayList<TransferFile> tol = mtc.filterAndResolve(fl);
+			ArrayList<TransferFile> tol = mtc.makeTransferFile(fl);
 			int tolSize = tol.size();
 
 			// Checkpoint - kill Task now if cancelled
@@ -270,12 +270,12 @@ public class MTCController
 				return null;
 
 			// Apply Category information
-			ArrayList<String> cats = new ArrayList<>();
 			if(!catInput.getText().trim().isEmpty())
-				Arrays.stream(catInput.getText().split(";")).map(s -> enwp.convertIfNotInNS(s.trim(), NS.CATEGORY)).forEach(cats::add);;
-			if(maintToggle.isSelected())
-				cats.add(String.format("Category:Files uploaded by %s with MTC! (check needed)", enwp.whoami()));
-			tol.forEach(t -> t.cats = cats);
+			{
+				String[] catL = catInput.getText().trim().split("\\|");
+				for(TransferFile t : tol)
+					t.addCat(catL);
+			}
 			
 			updateMessage(String.format("[Total/Filtered/Eligible]: [%d/%d/%d]", fl.size(), fl.size() - tolSize, tolSize));
 
