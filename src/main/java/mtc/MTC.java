@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.concurrent.TimeUnit;
 
 import fastily.jwiki.core.ColorLog;
 import fastily.jwiki.core.MQuery;
@@ -97,7 +98,7 @@ public final class MTC
 	/**
 	 * Generic http client for downloading files
 	 */
-	private OkHttpClient httpClient = new OkHttpClient();
+	private OkHttpClient httpClient = new OkHttpClient.Builder().readTimeout(2, TimeUnit.MINUTES).build();
 
 	/**
 	 * Initializes the Wiki objects and download folders for MTC.
@@ -176,17 +177,17 @@ public final class MTC
 	 */
 	public ArrayList<TransferFile> makeTransferFile(ArrayList<String> titles)
 	{
-		MQuery.getSharedDuplicatesOf(enwp, titles).forEach((k, v) -> {
-			if (!v.isEmpty())
-				titles.remove(k);
-		});
-
 		HashMap<String, ArrayList<String>> catL = MQuery.getCategoriesOnPage(enwp, titles);
 		if (!ignoreFilter)
 			catL.forEach((k, v) -> {
 				if (v.stream().anyMatch(blacklist::contains) || !v.stream().anyMatch(whitelist::contains))
 					titles.remove(k);
 			});
+		
+		MQuery.getSharedDuplicatesOf(enwp, titles).forEach((k, v) -> {
+			if (!v.isEmpty())
+				titles.remove(k);
+		});
 
 		ArrayList<TransferFile> l = new ArrayList<>();
 		MQuery.exists(com, titles).forEach((k, v) -> {
