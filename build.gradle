@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-	compile "info.picocli:picocli:1.0.1"
+	compile "info.picocli:picocli:2.0.3"
     compile "fastily:jwiki:1.4.1"
 }
 
@@ -51,5 +51,5 @@ task cmtc(type: Jar) {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.3'
+    gradleVersion = '4.3.1'
 }
