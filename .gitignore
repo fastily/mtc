@@ -17,7 +17,6 @@ Thumbs.db
 
 # Gradle
 .gradle/
-/bin/
 
 # IntelliJ IDEA
 .idea

@@ -1,53 +1,74 @@
-apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
-apply plugin: 'application'
 
+subprojects {
+    apply plugin: 'java'
 
-mainClassName = "mtc.App"
+    version = "1.1.1"
 
-repositories {
-    mavenLocal()
-    jcenter()
+    repositories {
+      mavenLocal()
+      jcenter()
+    }
+
+    dependencies {
+      compile "info.picocli:picocli:2.0.3"
+      compile "fastily:jwiki:1.4.1"
+    }
 }
 
-dependencies {
-	compile "info.picocli:picocli:2.0.3"
-    compile "fastily:jwiki:1.4.1"
+project(':cli') {
+    apply plugin: 'application'
+
+    mainClassName = "mtc.CMTC"
+
+    dependencies {
+        compile project(':shared')
+    }
+
+
+    task cmtc(type: Jar) {
+      baseName = "CMTC"
+
+      from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+      }
+
+      manifest {
+        attributes 'Main-Class': 'mtc.CMTC'
+      }
+      
+      exclude "META-INF/*.SF", "**/LICENSE*", "**/NOTICE*", "**/maven/**"
+
+      with jar
+    }
 }
 
-task mtc(type: Jar) {
-  baseName = "MTC"
-  version = "1.1.1"
+project(':ui') {
+    apply plugin: 'application'
 
-  from {
-    configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-  }
+    mainClassName = "mtc.App"
 
-  manifest {
-    attributes 'Main-Class': 'mtc.App'
-  }
-  
-  exclude "META-INF/*.SF", "**/LICENSE*", "**/NOTICE*", "**/maven/**"
+    dependencies {
+        compile project(':shared')
+    }
 
-  with jar
-}
 
-task cmtc(type: Jar) {
-  baseName = "CMTC"
-  version = "1.1.1"
+    task mtc(type: Jar) {
+      baseName = "MTC"
 
-  from {
-    configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-  }
+      from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+      }
 
-  manifest {
-    attributes 'Main-Class': 'mtc.CMTC'
-  }
-  
-  exclude "META-INF/*.SF", "**/LICENSE*", "**/NOTICE*", "**/maven/**"
+      manifest {
+        attributes 'Main-Class': 'mtc.App'
+      }
+      
+      exclude "META-INF/*.SF", "**/LICENSE*", "**/NOTICE*", "**/maven/**"
 
-  with jar
+      with jar
+    }    
 }
 
 task wrapper(type: Wrapper) {
