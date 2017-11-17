@@ -13,10 +13,10 @@ First, clone [jwiki](https://github.com/fastily/jwiki), build, and publish it to
 
 Then, clone and build this project with:
 ```bash
-./gradlew build ui:mtc
+./gradlew build mtc-ui:doDist
 ```
 
 #### Run
 ```bash
-./gradlew ui:run
+./gradlew mtc-ui:run
 ```

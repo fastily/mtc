@@ -17,17 +17,17 @@ subprojects {
     }
 }
 
-project(':cli') {
+project(':mtc-cli') {
     apply plugin: 'application'
 
     mainClassName = "mtc.CMTC"
 
     dependencies {
-        compile project(':shared')
+        compile project(':mtc-shared')
     }
 
 
-    task cmtc(type: Jar) {
+    task doDist(type: Jar) {
       baseName = "CMTC"
 
       from {
@@ -44,17 +44,17 @@ project(':cli') {
     }
 }
 
-project(':ui') {
+project(':mtc-ui') {
     apply plugin: 'application'
 
     mainClassName = "mtc.App"
 
     dependencies {
-        compile project(':shared')
+        compile project(':mtc-shared')
     }
 
 
-    task mtc(type: Jar) {
+    task doDist(type: Jar) {
       baseName = "MTC"
 
       from {
