@@ -8,11 +8,15 @@ MTC! is a tool that helps simplify and automate the file imports from Wikipedia 
 #### Build
 First, clone [jwiki](https://github.com/fastily/jwiki), build, and publish it to your local maven repository:
 ```bash
+git clone --depth 1 https://github.com/fastily/jwiki.git && \
+cd jwiki && \
 ./gradlew -x test build publishToMavenLocal
 ```
 
 Then, clone and build this project with:
 ```bash
+git clone https://github.com/fastily/mtc.git && \
+cd mtc && \
 ./gradlew build mtc-ui:doDist
 ```
 
