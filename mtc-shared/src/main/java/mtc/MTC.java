@@ -23,6 +23,7 @@ import fastily.jwiki.tp.WTemplate;
 import fastily.jwiki.tp.WikiText;
 import fastily.jwiki.util.FL;
 import fastily.jwiki.util.FSystem;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -216,7 +217,7 @@ public final class MTC
 	 * @param localpath The local path to save the file at.
 	 * @return True on success.
 	 */
-	private static boolean downloadFile(OkHttpClient client, String u, Path localpath)
+	private static boolean downloadFile(OkHttpClient client, HttpUrl u, Path localpath)
 	{
 		ColorLog.fyi("Downloading a file to " + localpath);
 
@@ -342,7 +343,7 @@ public final class MTC
 					return true;
 				}
 
-				return text != null && downloadFile(httpClient, imgInfoL.get(0).url.toString(), localFN)
+				return text != null && downloadFile(httpClient, imgInfoL.get(0).url, localFN)
 						&& com.upload(localFN, comFN, text, MStrings.tFrom)
 						&& enwp.edit(wpFN, String.format("{{subst:ncd|%s|reviewer=%s}}%n", comFN, enwp.whoami()) + enwpText, MStrings.tTo)
 						&& (!deleteOnTransfer
