@@ -72,5 +72,5 @@ project(':mtc-ui') {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.4'
+    gradleVersion = '4.4.1'
 }
