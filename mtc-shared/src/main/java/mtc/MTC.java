@@ -16,11 +16,11 @@ import java.util.concurrent.TimeUnit;
 import fastily.jwiki.core.ColorLog;
 import fastily.jwiki.core.MQuery;
 import fastily.jwiki.core.NS;
+import fastily.jwiki.core.WParser;
+import fastily.jwiki.core.WParser.WTemplate;
+import fastily.jwiki.core.WParser.WikiText;
 import fastily.jwiki.core.Wiki;
 import fastily.jwiki.dwrap.ImageInfo;
-import fastily.jwiki.tp.WParser;
-import fastily.jwiki.tp.WTemplate;
-import fastily.jwiki.tp.WikiText;
 import fastily.jwiki.util.FL;
 import fastily.jwiki.util.FSystem;
 import okhttp3.HttpUrl;
@@ -459,7 +459,7 @@ public final class MTC
 
 			for (ImageInfo ii : imgInfoL)
 				out += String.format("%n|-%n| %s || %d × %d || [[w:User:%s|%s]] || ''<nowiki>%s</nowiki>''",
-						FSystem.iso8601dtf.format(LocalDateTime.ofInstant(ii.timestamp, ZoneOffset.UTC)), ii.dimensions.x, ii.dimensions.y,
+						FSystem.iso8601dtf.format(LocalDateTime.ofInstant(ii.timestamp, ZoneOffset.UTC)), ii.width, ii.height,
 						ii.user, ii.user, ii.summary.replace("\n", " ").replace("  ", " "));
 			out += "\n|}\n";
 
