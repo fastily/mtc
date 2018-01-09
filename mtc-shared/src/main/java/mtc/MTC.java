@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
-import fastily.jwiki.core.ColorLog;
 import fastily.jwiki.core.MQuery;
 import fastily.jwiki.core.NS;
 import fastily.jwiki.core.WParser;
@@ -219,7 +218,7 @@ public final class MTC
 	 */
 	private static boolean downloadFile(OkHttpClient client, HttpUrl u, Path localpath)
 	{
-		ColorLog.fyi("Downloading a file to " + localpath);
+		System.err.println("Downloading a file to " + localpath);
 
 		byte[] bf = new byte[1024 * 512]; // 512kb buffer.
 		int read;

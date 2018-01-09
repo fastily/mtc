@@ -3,7 +3,6 @@ package mtc;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import fastily.jwiki.core.ColorLog;
 import fastily.jwiki.core.NS;
 import fastily.jwiki.core.Wiki;
 import fastily.jwiki.util.FL;
@@ -115,7 +114,7 @@ public class CMTC
 		AtomicInteger i = new AtomicInteger();
 
 		ArrayList<String> fails = FL.toAL(tl.stream().filter(to -> {
-			ColorLog.fyi(String.format("Processing item %d of %d", i.incrementAndGet(), total));
+			System.err.println(String.format("Processing item %d of %d", i.incrementAndGet(), total));
 			return !to.doTransfer();
 		}).map(to -> to.wpFN));
 
