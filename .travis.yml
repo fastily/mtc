@@ -7,6 +7,10 @@ before_install:
   - cd jwiki
   - ./gradlew -x test build publishToMavenLocal
   - cd ../
+  - git clone --depth 1 https://github.com/fastily/mw-oauth.git
+  - cd mw-oauth
+  - ./gradlew -x test build publishToMavenLocal
+  - cd ../
 
 notifications:
   email: false
