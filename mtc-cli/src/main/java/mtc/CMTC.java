@@ -80,8 +80,8 @@ public class CMTC
 			return;
 		}
 
-		MTC mtc = new MTC();
-		mtc.login("FSock", WGen.pxFor("FSock"));
+		Wiki enwp = new Wiki("FSock", WGen.pxFor("FSock"), MStrings.wpHN);
+		MTC mtc = new MTC(enwp, enwp.getWiki(MStrings.comHN));
 
 		mtc.useTrackingCat = false;
 		mtc.dryRun = cmtc.dryRun;

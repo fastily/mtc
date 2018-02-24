@@ -33,7 +33,7 @@ import okhttp3.Response;
  * @author Fastily
  *
  */
-public final class MTC
+public class MTC
 {
 	/**
 	 * Cache of whether a Template exists on Commons.
@@ -48,7 +48,7 @@ public final class MTC
 	/**
 	 * The Wiki objects to use
 	 */
-	protected Wiki enwp = new Wiki("en.wikipedia.org"), com = new Wiki("commons.wikimedia.org");
+	protected Wiki enwp, com;
 
 	/**
 	 * Regex matching Copy to Commons templates.
@@ -99,22 +99,17 @@ public final class MTC
 	 * Generic http client for downloading files
 	 */
 	private OkHttpClient httpClient = new OkHttpClient.Builder().readTimeout(2, TimeUnit.MINUTES).build();
-
-	/**
-	 * Initializes the Wiki objects and download folders for MTC.
-	 */
-	public MTC()
-	{
-		this(false);
-	}
-
+	
 	/**
 	 * Creates an MTC object.
 	 * 
 	 * @param cliOnly Set true to disable download folder creation. CAVEAT: This is only for read-only usage.
 	 */
-	public MTC(boolean cliOnly)
+	public MTC(Wiki enwp, Wiki com)
 	{
+		this.enwp = enwp;
+		this.com = com;
+		
 		// Generate whitelist & blacklist
 		HashMap<String, ArrayList<String>> l = MQuery.getLinksOnPage(enwp,
 				FL.toSAL(MStrings.fullname + "/Blacklist", MStrings.fullname + "/Whitelist"));
@@ -122,9 +117,9 @@ public final class MTC
 		whitelist = new HashSet<>(l.get(MStrings.fullname + "/Whitelist"));
 
 		// Generate download directory
-		try
+		try //TODO: Split into own method
 		{
-			if (!cliOnly && !Files.isDirectory(mtcfiles))
+			if (!Files.isDirectory(mtcfiles))
 				Files.createDirectory(mtcfiles);
 		}
 		catch (Throwable e)
@@ -145,27 +140,6 @@ public final class MTC
 		ArrayList<String> rtl = enwp.nss(enwp.whatLinksHere("Template:Copy to Wikimedia Commons", true));
 		rtl.add("Copy to Wikimedia Commons");
 		mtcRegex = "(?si)\\{\\{(" + FL.pipeFence(rtl) + ").*?\\}\\}";
-	}
-
-	/**
-	 * Attempts login as the specified user.
-	 * 
-	 * @param user The username to login as
-	 * @param px The password to login with
-	 * @return True on success.
-	 */
-	public boolean login(String user, String px)
-	{
-		try
-		{
-			return enwp.login(user, px) && com.login(user, px);
-		}
-		catch (Throwable e)
-		{
-			e.printStackTrace();
-		}
-
-		return false;
 	}
 
 	/**

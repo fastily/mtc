@@ -6,7 +6,7 @@ package mtc;
  * @author Fastily
  *
  */
-public class MStrings
+class MStrings
 {
 	/**
 	 * Version number
@@ -33,6 +33,16 @@ public class MStrings
 	 */
 	protected static final String tTo = String.format("Transferred to Commons ([[%s|%s]]) (%s)", fullname, name, version);
 
+	/**
+	 * Short-form hostname for the English Wikipedia 
+	 */
+	protected static final String wpHN = "en.wikipedia.org";
+	
+	/**
+	 * Short-form hostname for Wikimedia Commons.
+	 */
+	protected static final String comHN = "commons.wikimedia.org";
+	
 	/**
 	 * Constructors disallowed.
 	 */

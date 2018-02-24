@@ -21,7 +21,7 @@ subprojects {
     }
 
     dependencies {
-      compile "info.picocli:picocli:2.2.1"
+      compile "info.picocli:picocli:2.3.0"
       compile "fastily:jwiki:1.5.1"
     }
 }

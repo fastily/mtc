@@ -5,6 +5,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import fastily.jwiki.core.Wiki;
 import fastily.jwiki.util.FSystem;
 
 /**
@@ -13,11 +14,11 @@ import fastily.jwiki.util.FSystem;
  * @author Fastily
  */
 public class App extends Application
-{	
+{
 	/**
 	 * The MTC object to use.
 	 */
-	private MTC mtc = new MTC();
+	private MTC mtc;
 
 	/**
 	 * Main Driver
@@ -34,8 +35,10 @@ public class App extends Application
 	 */
 	public void start(Stage stage) throws Exception
 	{
+		Wiki enwp = new Wiki(MStrings.wpHN);
+
 		// Check Version
-		String minVersion = mtc.enwp.getPageText(MStrings.fullname + "/Version").trim();
+		String minVersion = enwp.getPageText(MStrings.fullname + "/Version").trim();
 		if (!versionCheck(MStrings.version, minVersion))
 		{
 			FXTool.warnUser(
@@ -50,7 +53,16 @@ public class App extends Application
 		FXMLLoader lcLoader = FXTool.makeNewLoader(LoginController.fxmlLoc, LoginController.class);
 		stage.setScene(new Scene(lcLoader.load()));
 
-		lcLoader.<LoginController> getController().initData(mtc::login, this::createAndShowMTC);
+		lcLoader.<LoginController> getController().initData((u, p) -> {
+			Wiki com;
+			if (enwp.login(u, p) && (com = enwp.getWiki(MStrings.comHN)) != null)
+			{
+				mtc = new MTC(enwp, com);
+				return true;
+			}
+
+			return false;
+		}, this::createAndShowMTC);
 
 		stage.setTitle(MStrings.name);
 		stage.show();

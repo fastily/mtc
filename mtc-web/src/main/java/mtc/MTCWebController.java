@@ -1,5 +1,7 @@
 package mtc;
 
+import java.util.HashMap;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -8,6 +10,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.github.scribejava.core.model.OAuth1AccessToken;
 
+import fastily.jwiki.core.Wiki;
 import fastily.mwoauth.MWOAuth;
 
 /**
@@ -24,6 +27,11 @@ public class MTCWebController
 	 */
 	private MWOAuth o = new MWOAuth(System.getProperty("consumerID"), System.getProperty("clientSecret"), "en.wikipedia.org");
 	// TODO: Should this be a bean?
+	
+	/**
+	 * The MTC Object to use
+	 */
+	private MTC mtc = new MTC(new Wiki(MStrings.wpHN), new Wiki(MStrings.comHN));
 	
 	/**
 	 * End point which redirects user to OAuth if there is no existing session.
@@ -43,6 +51,14 @@ public class MTCWebController
 		}
 
 		return null;
+	}
+	
+	@RequestMapping(value = "/genDesc", method = RequestMethod.GET, params = { "title" })
+	public HashMap<String, String> generateDescPage(@RequestParam(value = "title") String title)
+	{
+
+			return null; //TODO: fixme
+		
 	}
 
 	@RequestMapping(value = "/", method = RequestMethod.GET, params = { "oauth_verifier", "oauth_token" })
