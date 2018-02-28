@@ -149,7 +149,7 @@ public class MTC
 	 * @param titles The List of enwp files to transfer
 	 * @return An ArrayList of TransferObject objects.
 	 */
-	public ArrayList<TransferFile> makeTransferFile(ArrayList<String> titles)
+	public ArrayList<FileInfo> makeTransferFile(ArrayList<String> titles)
 	{
 		HashMap<String, ArrayList<String>> catL = MQuery.getCategoriesOnPage(enwp, titles);
 		if (!ignoreFilter)
@@ -163,10 +163,10 @@ public class MTC
 				titles.remove(k);
 		});
 
-		ArrayList<TransferFile> l = new ArrayList<>();
+		ArrayList<FileInfo> l = new ArrayList<>();
 		MQuery.exists(com, titles).forEach((k, v) -> {
 			if (!v)
-				l.add(new TransferFile(k, k, catL.get(k)));
+				l.add(new FileInfo(k, k, catL.get(k)));
 			else
 			{
 				String comFN;
@@ -175,7 +175,7 @@ public class MTC
 					comFN = new StringBuilder(k).insert(k.lastIndexOf('.'), " " + Math.round(Math.random() * 1000)).toString();
 				} while (com.exists(comFN)); // loop until available filename is found
 
-				l.add(new TransferFile(k, comFN, catL.get(k)));
+				l.add(new FileInfo(k, comFN, catL.get(k)));
 			}
 		});
 
@@ -219,7 +219,7 @@ public class MTC
 	 * @author Fastily
 	 *
 	 */
-	public class TransferFile
+	public class FileInfo
 	{
 		/**
 		 * The enwp filename
@@ -241,6 +241,11 @@ public class MTC
 		 */
 		private String enwpText;
 
+		/**
+		 * The output text for Commons.
+		 */
+		protected String comText;
+		
 		/**
 		 * The summary and license sections.
 		 */
@@ -274,7 +279,7 @@ public class MTC
 		 * @param comFN The commons title to transfer to
 		 * @param enwpCats List of categories on the enwp file description page
 		 */
-		private TransferFile(String wpFN, String comFN, ArrayList<String> enwpCats)
+		private FileInfo(String wpFN, String comFN, ArrayList<String> enwpCats)
 		{
 			this.comFN = comFN;
 			this.wpFN = wpFN;
@@ -305,19 +310,17 @@ public class MTC
 		{
 			try
 			{
-				imgInfoL = enwp.getImageInfo(wpFN);
-				uploader = imgInfoL.get(imgInfoL.size() - 1).user;
-
-				String text = gen();
+				if(comText == null)
+					gen();
 
 				if (dryRun)
 				{
-					System.out.println(text);
+					System.out.println(comText);
 					return true;
 				}
 
-				return text != null && downloadFile(httpClient, imgInfoL.get(0).url, localFN)
-						&& com.upload(localFN, comFN, text, MStrings.tFrom)
+				return comText != null && downloadFile(httpClient, imgInfoL.get(0).url, localFN)
+						&& com.upload(localFN, comFN, comText, MStrings.tFrom)
 						&& enwp.edit(wpFN, String.format("{{subst:ncd|%s|reviewer=%s}}%n", comFN, enwp.whoami()) + enwpText, MStrings.tTo)
 						&& (!deleteOnTransfer
 								|| enwp.delete(wpFN, String.format("[[WP:CSD#F8|F8]]: Media file available on Commons: [[:%s]]", comFN)));
@@ -332,8 +335,14 @@ public class MTC
 		/**
 		 * Processes parsed text and templates from the API
 		 */
-		private String gen()
+		public void gen()
 		{
+			if(comText != null)
+				return;
+			
+			imgInfoL = enwp.getImageInfo(wpFN);
+			uploader = imgInfoL.get(imgInfoL.size() - 1).user;
+			
 			// preprocess text
 			String txt = enwp.getPageText(wpFN);
 			txt = txt.replaceAll(mtcRegex, ""); // strip copy to commons
@@ -420,33 +429,31 @@ public class MTC
 					fuzzForParam(info, "Permission", "").trim(), fuzzForParam(info, "Other_versions", "").trim()));
 
 			// Work with text as String
-			String out = sumSection.toString() + licSection.toString();
-			out = out.replaceAll("(?<=\\[\\[)(.+?\\]\\])", "w:$1"); // add enwp prefix to links
-			out = out.replaceAll("(?i)\\[\\[(w::|w:w:)", "[[w:"); // Remove any double colons in interwiki links
-			out = out.replaceAll("\\n{3,}", "\n"); // Remove excessive spacing
+			comText = sumSection.toString() + licSection.toString();
+			comText = comText.replaceAll("(?<=\\[\\[)(.+?\\]\\])", "w:$1"); // add enwp prefix to links
+			comText = comText.replaceAll("(?i)\\[\\[(w::|w:w:)", "[[w:"); // Remove any double colons in interwiki links
+			comText = comText.replaceAll("\\n{3,}", "\n"); // Remove excessive spacing
 
 			// Generate Upload Log Section
-			out += "\n== {{Original upload log}} ==\n" + String.format("{{Original file page|en.wikipedia|%s}}%n", enwp.nss(wpFN))
+			comText += "\n== {{Original upload log}} ==\n" + String.format("{{Original file page|en.wikipedia|%s}}%n", enwp.nss(wpFN))
 					+ "{| class=\"wikitable\"\n! {{int:filehist-datetime}} !! {{int:filehist-dimensions}} !! {{int:filehist-user}} "
 					+ "!! {{int:filehist-comment}}";
 
 			for (ImageInfo ii : imgInfoL)
-				out += String.format("%n|-%n| %s || %d × %d || [[w:User:%s|%s]] || ''<nowiki>%s</nowiki>''",
+				comText += String.format("%n|-%n| %s || %d × %d || [[w:User:%s|%s]] || ''<nowiki>%s</nowiki>''",
 						FSystem.iso8601dtf.format(LocalDateTime.ofInstant(ii.timestamp, ZoneOffset.UTC)), ii.width, ii.height,
 						ii.user, ii.user, ii.summary.replace("\n", " ").replace("  ", " "));
-			out += "\n|}\n";
+			comText += "\n|}\n";
 
 			// Fill in cats
 			if (cats.isEmpty())
-				out += "\n{{Subst:Unc}}";
+				comText += "\n{{Subst:Unc}}";
 			else
 				for (String s : cats)
-					out += String.format("\n[[%s]]", com.convertIfNotInNS(s, NS.CATEGORY));
+					comText += String.format("\n[[%s]]", com.convertIfNotInNS(s, NS.CATEGORY));
 
 			if (useTrackingCat)
-				out += "\n[[Category:Uploaded with MTC!]]";
-
-			return out;
+				comText += "\n[[Category:Uploaded with MTC!]]";
 		}
 
 		/**

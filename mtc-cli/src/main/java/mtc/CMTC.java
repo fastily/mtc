@@ -7,7 +7,7 @@ import fastily.jwiki.core.NS;
 import fastily.jwiki.core.Wiki;
 import fastily.jwiki.util.FL;
 import fastily.jwiki.util.WGen;
-import mtc.MTC.TransferFile;
+import mtc.MTC.FileInfo;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -104,10 +104,10 @@ public class CMTC
 				fl.addAll(wiki.getUserUploads(s));
 		}
 
-		ArrayList<TransferFile> tl = mtc.makeTransferFile(fl);
+		ArrayList<FileInfo> tl = mtc.makeTransferFile(fl);
 
 		if (cmtc.cat != null)
-			for (TransferFile t : tl)
+			for (FileInfo t : tl)
 				t.addCat(cmtc.cat);
 
 		int total = tl.size();

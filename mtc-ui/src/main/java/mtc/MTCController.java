@@ -14,7 +14,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import mtc.MTC.TransferFile;
+import mtc.MTC.FileInfo;
 import fastily.jwiki.core.NS;
 import fastily.jwiki.core.Wiki;
 import fastily.jwiki.util.FL;
@@ -262,7 +262,7 @@ public class MTCController
 					break;
 			}
 
-			ArrayList<TransferFile> tol = mtc.makeTransferFile(fl);
+			ArrayList<FileInfo> tol = mtc.makeTransferFile(fl);
 			int tolSize = tol.size();
 
 			// Checkpoint - kill Task now if cancelled
@@ -273,7 +273,7 @@ public class MTCController
 			if(!catInput.getText().trim().isEmpty())
 			{
 				String[] catL = catInput.getText().trim().split("\\|");
-				for(TransferFile t : tol)
+				for(FileInfo t : tol)
 					t.addCat(catL);
 			}
 			
@@ -287,7 +287,7 @@ public class MTCController
 			else
 				for (int i = 0; i < tol.size() && !isCancelled(); i++)
 				{
-					TransferFile to = tol.get(i);
+					FileInfo to = tol.get(i);
 
 					updateProgress(i, tolSize);
 					updateMessage(String.format("Transfer [%d/%d]: %s", i, tolSize, to.wpFN));
