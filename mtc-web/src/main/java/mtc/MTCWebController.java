@@ -26,7 +26,6 @@ public class MTCWebController
 	 * Static shared MWOAuth object
 	 */
 	private MWOAuth o = new MWOAuth(System.getProperty("consumerID"), System.getProperty("clientSecret"), "en.wikipedia.org");
-	// TODO: Should this be a bean?
 	
 	/**
 	 * The MTC Object to use
