@@ -1,15 +1,6 @@
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 
-    buildscript {
-      repositories {
-        mavenCentral()
-      }
-      dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.10.RELEASE")
-      }
-    }
-
 subprojects {
     apply plugin: 'java'
 
@@ -79,23 +70,6 @@ project(':mtc-ui') {
       with jar
     }
 }
-
-project(':mtc-web') {
-
-
-    // apply plugin: 'application'
-    apply plugin: 'org.springframework.boot'
-
-    // mainClassName = "mtc.WebApp"
-
-    dependencies {
-        compile project(':mtc-shared')
-        
-        compile "fastily:mw-oauth:0.0.1"
-        compile "org.springframework.boot:spring-boot-starter-web:1.5.10.RELEASE"
-    }
-}
-
 
 task wrapper(type: Wrapper) {
     gradleVersion = '4.6'
