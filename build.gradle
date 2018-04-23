@@ -13,7 +13,7 @@ subprojects {
 
     dependencies {
       compile "info.picocli:picocli:2.3.0"
-      compile "fastily:jwiki:1.5.1"
+      compile "fastily:jwiki:1.6.1"
     }
 }
 
@@ -72,5 +72,5 @@ project(':mtc-ui') {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.6'
+    gradleVersion = '4.7'
 }
