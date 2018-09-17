@@ -1,6 +1,6 @@
 package mtc;
 
-import fastily.jwiki.util.FSystem;
+import fastily.wptoolbox.Sys;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Alert;
@@ -38,7 +38,7 @@ public final class FXTool
 		}
 		catch (Throwable e)
 		{
-			FSystem.errAndExit(e, String.format("Should never reach this point; '%s' is missing?", name));
+			Sys.errAndExit(e, String.format("Should never reach this point; '%s' is missing?", name));
 			return null;
 		}
 	}

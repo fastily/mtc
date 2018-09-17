@@ -21,7 +21,8 @@ import fastily.jwiki.core.WParser.WikiText;
 import fastily.jwiki.core.Wiki;
 import fastily.jwiki.dwrap.ImageInfo;
 import fastily.jwiki.util.FL;
-import fastily.jwiki.util.FSystem;
+import fastily.wptoolbox.Dates;
+import fastily.wptoolbox.Sys;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -124,7 +125,7 @@ public class MTC
 		}
 		catch (Throwable e)
 		{
-			FSystem.errAndExit(e, "Failed to create output folder.  Do you have write permissions?");
+			Sys.errAndExit(e, "Failed to create output folder.  Do you have write permissions?");
 		}
 
 		// Process template redirect data
@@ -441,7 +442,7 @@ public class MTC
 
 			for (ImageInfo ii : imgInfoL)
 				comText += String.format("%n|-%n| %s || %d × %d || [[w:User:%s|%s]] || ''<nowiki>%s</nowiki>''",
-						FSystem.iso8601dtf.format(LocalDateTime.ofInstant(ii.timestamp, ZoneOffset.UTC)), ii.width, ii.height,
+						Dates.iso8601dtf.format(LocalDateTime.ofInstant(ii.timestamp, ZoneOffset.UTC)), ii.width, ii.height,
 						ii.user, ii.user, ii.summary.replace("\n", " ").replace("  ", " "));
 			comText += "\n|}\n";
 

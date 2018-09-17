@@ -6,7 +6,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import fastily.jwiki.core.Wiki;
-import fastily.jwiki.util.FSystem;
+import fastily.wptoolbox.Sys;
 
 /**
  * A GUI wrapper for MTC
@@ -84,7 +84,7 @@ public class App extends Application
 		}
 		catch (Throwable e)
 		{
-			FSystem.errAndExit(e, "Should never reach here, is your FXML malformed or missing?");
+			Sys.errAndExit(e, "Should never reach here, is your FXML malformed or missing?");
 		}
 
 		lcLoader.<MTCController> getController().initData(mtc);
