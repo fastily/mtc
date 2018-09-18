@@ -2,75 +2,75 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 
 subprojects {
-    apply plugin: 'java'
+  apply plugin: 'java'
 
-    version = "1.1.1"
+  version = "1.1.1"
 
-    repositories {
-      mavenLocal()
-      jcenter()
-    }
+  repositories {
+    mavenLocal()
+    jcenter()
+  }
 
-    dependencies {
-      compile 'info.picocli:picocli:3.5.2'
-	  compile 'fastily:wp-toolbox:0.0.2'
-    }
+  dependencies {
+    compile 'info.picocli:picocli:3.6.0'
+    compile 'fastily:wp-toolbox:0.0.2'
+  }
 }
 
 project(':mtc-cli') {
-    apply plugin: 'application'
+  apply plugin: 'application'
 
-    mainClassName = "mtc.CMTC"
+  mainClassName = "mtc.CMTC"
 
-    dependencies {
-        compile project(':mtc-shared')
+  dependencies {
+    compile project(':mtc-shared')
+  }
+
+
+  task doDist(type: Jar) {
+    baseName = "CMTC"
+
+    from {
+      configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
     }
 
-
-    task doDist(type: Jar) {
-      baseName = "CMTC"
-
-      from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-      }
-
-      manifest {
-        attributes 'Main-Class': 'mtc.CMTC'
-      }
-      
-      exclude "META-INF/*.SF", "**/LICENSE*", "**/NOTICE*", "**/maven/**"
-
-      with jar
+    manifest {
+      attributes 'Main-Class': 'mtc.CMTC'
     }
+
+    exclude "META-INF/*.SF", "**/LICENSE*", "**/NOTICE*", "**/maven/**"
+
+    with jar
+  }
 }
 
 project(':mtc-ui') {
-    apply plugin: 'application'
+  apply plugin: 'application'
 
-    mainClassName = "mtc.App"
+  mainClassName = "mtc.App"
 
-    dependencies {
-        compile project(':mtc-shared')
+  dependencies {
+    compile project(':mtc-shared')
+  }
+
+
+  task doDist(type: Jar) {
+    baseName = "MTC"
+
+    from {
+      configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
     }
 
-
-    task doDist(type: Jar) {
-      baseName = "MTC"
-
-      from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-      }
-
-      manifest {
-        attributes 'Main-Class': 'mtc.App'
-      }
-      
-      exclude "META-INF/*.SF", "**/LICENSE*", "**/NOTICE*", "**/maven/**"
-
-      with jar
+    manifest {
+      attributes 'Main-Class': 'mtc.App'
     }
+
+    exclude "META-INF/*.SF", "**/LICENSE*", "**/NOTICE*", "**/maven/**"
+
+    with jar
+  }
 }
 
 wrapper {
-    gradleVersion = '4.10.1'
+  gradleVersion = '4.10.1'
 }
