@@ -12,7 +12,7 @@ subprojects {
   }
 
   dependencies {
-    compile 'info.picocli:picocli:3.6.1'
+    compile 'info.picocli:picocli:3.7.0'
     compile 'fastily:wp-toolbox:0.0.2'
   }
 }
