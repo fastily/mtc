@@ -5,6 +5,11 @@ language: java
 jdk:
   - openjdk8
 
+addons:
+  apt:
+    packages:
+    - openjfx
+
 before_install:
   - git clone --depth 1 https://github.com/fastily/jwiki.git
   - pushd jwiki
