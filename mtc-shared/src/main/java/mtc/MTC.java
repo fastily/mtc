@@ -75,7 +75,7 @@ public class MTC
 	 * Flag indicating whether transferred files should include the check needed category.
 	 */
 	protected boolean useCheckNeededCat = false;
-	
+
 	/**
 	 * Flag indicating whether we should attempt deletion on successful transfer.
 	 */
@@ -100,7 +100,7 @@ public class MTC
 	 * Generic http client for downloading files
 	 */
 	private OkHttpClient httpClient = new OkHttpClient.Builder().readTimeout(2, TimeUnit.MINUTES).build();
-	
+
 	/**
 	 * Creates an MTC object.
 	 * 
@@ -110,7 +110,7 @@ public class MTC
 	{
 		this.enwp = enwp;
 		this.com = com;
-		
+
 		// Generate whitelist & blacklist
 		HashMap<String, ArrayList<String>> l = MQuery.getLinksOnPage(enwp,
 				FL.toSAL(MStrings.fullname + "/Blacklist", MStrings.fullname + "/Whitelist"));
@@ -118,7 +118,7 @@ public class MTC
 		whitelist = new HashSet<>(l.get(MStrings.fullname + "/Whitelist"));
 
 		// Generate download directory
-		try //TODO: Split into own method
+		try // TODO: Split into own method
 		{
 			if (!Files.isDirectory(mtcfiles))
 				Files.createDirectory(mtcfiles);
@@ -154,15 +154,17 @@ public class MTC
 	{
 		HashMap<String, ArrayList<String>> catL = MQuery.getCategoriesOnPage(enwp, titles);
 		if (!ignoreFilter)
+		{
 			catL.forEach((k, v) -> {
 				if (v.stream().anyMatch(blacklist::contains) || !v.stream().anyMatch(whitelist::contains))
 					titles.remove(k);
 			});
-		
-		MQuery.getSharedDuplicatesOf(enwp, titles).forEach((k, v) -> {
-			if (!v.isEmpty())
-				titles.remove(k);
-		});
+
+			MQuery.getSharedDuplicatesOf(enwp, titles).forEach((k, v) -> {
+				if (!v.isEmpty())
+					titles.remove(k);
+			});
+		}
 
 		ArrayList<FileInfo> l = new ArrayList<>();
 		MQuery.exists(com, titles).forEach((k, v) -> {
@@ -246,7 +248,7 @@ public class MTC
 		 * The output text for Commons.
 		 */
 		protected String comText;
-		
+
 		/**
 		 * The summary and license sections.
 		 */
@@ -288,20 +290,21 @@ public class MTC
 
 			String baseFN = enwp.nss(wpFN);
 			localFN = mtcfiles.resolve(baseFN.hashCode() + baseFN.substring(baseFN.lastIndexOf('.')));
-			
-			if(useCheckNeededCat)
+
+			if (useCheckNeededCat)
 				cats.add(String.format("Category:Files uploaded by %s with MTC! (check needed)", enwp.whoami()));
 		}
 
 		/**
 		 * Adds categories which will be applied to transferred files.
+		 * 
 		 * @param catL The categories to add.
 		 */
-		public void addCat(String...catL)
+		public void addCat(String... catL)
 		{
 			cats.addAll(Arrays.asList(catL));
 		}
-		
+
 		/**
 		 * Attempts to transfer an enwp file to Commons
 		 * 
@@ -311,7 +314,7 @@ public class MTC
 		{
 			try
 			{
-				if(comText == null)
+				if (comText == null)
 					gen();
 
 				if (dryRun)
@@ -338,12 +341,12 @@ public class MTC
 		 */
 		public void gen()
 		{
-			if(comText != null)
+			if (comText != null)
 				return;
-			
+
 			imgInfoL = enwp.getImageInfo(wpFN);
 			uploader = imgInfoL.get(imgInfoL.size() - 1).user;
-			
+
 			// preprocess text
 			String txt = enwp.getPageText(wpFN);
 			txt = txt.replaceAll(mtcRegex, ""); // strip copy to commons
@@ -442,8 +445,8 @@ public class MTC
 
 			for (ImageInfo ii : imgInfoL)
 				comText += String.format("%n|-%n| %s || %d × %d || [[w:User:%s|%s]] || ''<nowiki>%s</nowiki>''",
-						Dates.iso8601dtf.format(LocalDateTime.ofInstant(ii.timestamp, ZoneOffset.UTC)), ii.width, ii.height,
-						ii.user, ii.user, ii.summary.replace("\n", " ").replace("  ", " "));
+						Dates.iso8601dtf.format(LocalDateTime.ofInstant(ii.timestamp, ZoneOffset.UTC)), ii.width, ii.height, ii.user,
+						ii.user, ii.summary.replace("\n", " ").replace("  ", " "));
 			comText += "\n|}\n";
 
 			// Fill in cats
