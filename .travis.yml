@@ -2,24 +2,15 @@ dist: xenial
 sudo: false
 language: java
 
-jdk:
-  - openjdk8
-
-addons:
-  apt:
-    packages:
-    - openjfx
-
 before_install:
   - git clone --depth 1 https://github.com/fastily/jwiki.git
   - pushd jwiki
-  - ./gradlew -x test build publishToMavenLocal
+  - ./gradlew -x test publishToMavenLocal
   - popd
   - git clone --depth 1 https://github.com/fastily/wp-toolbox.git
   - pushd wp-toolbox
-  - ./gradlew -x test build publishToMavenLocal
+  - ./gradlew -x test publishToMavenLocal
   - popd
 
 notifications:
   email: false
-  

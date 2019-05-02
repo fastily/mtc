@@ -1,5 +1,8 @@
-apply plugin: 'eclipse'
-apply plugin: 'idea'
+plugins {
+  id "org.openjfx.javafxplugin" version "0.0.7" apply false
+  id "eclipse"
+  id "idea"
+}
 
 subprojects {
   apply plugin: 'java'
@@ -12,7 +15,7 @@ subprojects {
   }
 
   dependencies {
-    compile 'info.picocli:picocli:3.9.5'
+    compile 'info.picocli:picocli:3.9.6'
     compile 'fastily:wp-toolbox:0.0.2'
   }
 }
@@ -25,7 +28,6 @@ project(':mtc-cli') {
   dependencies {
     compile project(':mtc-shared')
   }
-
 
   task doDist(type: Jar) {
     baseName = "CMTC"
@@ -46,6 +48,7 @@ project(':mtc-cli') {
 
 project(':mtc-ui') {
   apply plugin: 'application'
+  apply plugin: "org.openjfx.javafxplugin"
 
   mainClassName = "mtc.App"
 
@@ -53,6 +56,10 @@ project(':mtc-ui') {
     compile project(':mtc-shared')
   }
 
+  javafx {
+    version = "11.0.2"
+    modules = [ 'javafx.controls', 'javafx.fxml' ]
+  }
 
   task doDist(type: Jar) {
     baseName = "MTC"
@@ -72,5 +79,5 @@ project(':mtc-ui') {
 }
 
 wrapper {
-  gradleVersion = '5.4'
+  gradleVersion = '5.4.1'
 }
