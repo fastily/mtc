@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.concurrent.TimeUnit;
 
 import fastily.jwiki.core.MQuery;
 import fastily.jwiki.core.NS;
@@ -22,10 +21,9 @@ import fastily.jwiki.core.Wiki;
 import fastily.jwiki.dwrap.ImageInfo;
 import fastily.jwiki.util.FL;
 import fastily.wptoolbox.Dates;
+import fastily.wptoolbox.HTTP;
 import fastily.wptoolbox.Sys;
 import okhttp3.HttpUrl;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import okhttp3.Response;
 
 /**
@@ -95,11 +93,6 @@ public class MTC
 	 * Files must be members of at least one of the following categories to be eligible for transfer.
 	 */
 	protected HashSet<String> whitelist;
-
-	/**
-	 * Generic http client for downloading files
-	 */
-	private OkHttpClient httpClient = new OkHttpClient.Builder().readTimeout(2, TimeUnit.MINUTES).build();
 
 	/**
 	 * Creates an MTC object.
@@ -188,19 +181,17 @@ public class MTC
 	/**
 	 * Downloads a file and saves it to disk.
 	 * 
-	 * @param client The OkHttpClient to use perform network connections with.
 	 * @param u The url to download from
 	 * @param localpath The local path to save the file at.
 	 * @return True on success.
 	 */
-	private static boolean downloadFile(OkHttpClient client, HttpUrl u, Path localpath)
+	private static boolean downloadFile(HttpUrl u, Path localpath)
 	{
 		System.err.println("Downloading a file to " + localpath);
 
 		byte[] bf = new byte[1024 * 512]; // 512kb buffer.
 		int read;
-		try (Response r = client.newCall(new Request.Builder().url(u).get().build()).execute();
-				OutputStream out = Files.newOutputStream(localpath))
+		try (Response r = HTTP.getResponse(u); OutputStream out = Files.newOutputStream(localpath))
 		{
 			InputStream in = r.body().byteStream();
 			while ((read = in.read(bf)) > -1)
@@ -323,8 +314,7 @@ public class MTC
 					return true;
 				}
 
-				return comText != null && downloadFile(httpClient, imgInfoL.get(0).url, localFN)
-						&& com.upload(localFN, comFN, comText, MStrings.tFrom)
+				return comText != null && downloadFile(imgInfoL.get(0).url, localFN) && com.upload(localFN, comFN, comText, MStrings.tFrom)
 						&& enwp.edit(wpFN, String.format("{{subst:ncd|%s|reviewer=%s}}%n", comFN, enwp.whoami()) + enwpText, MStrings.tTo)
 						&& (!deleteOnTransfer
 								|| enwp.delete(wpFN, String.format("[[WP:CSD#F8|F8]]: Media file available on Commons: [[:%s]]", comFN)));
