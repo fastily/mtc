@@ -35,7 +35,7 @@ public class App extends Application
 	 */
 	public void start(Stage stage) throws Exception
 	{
-		Wiki enwp = new Wiki(MStrings.wpHN);
+		Wiki enwp = new Wiki.Builder().build();
 
 		// Check Version
 		String minVersion = enwp.getPageText(MStrings.fullname + "/Version").trim();
