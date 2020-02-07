@@ -4,6 +4,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
+import org.fastily.jwiki.core.NS;
+import org.fastily.jwiki.core.Wiki;
+import org.fastily.jwiki.util.FL;
+
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -15,9 +19,6 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import mtc.MTC.FileInfo;
-import fastily.jwiki.core.NS;
-import fastily.jwiki.core.Wiki;
-import fastily.jwiki.util.FL;
 
 /**
  * An MTC UI window

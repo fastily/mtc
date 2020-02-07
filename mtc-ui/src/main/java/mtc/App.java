@@ -1,12 +1,13 @@
 package mtc;
 
+import org.fastily.jwiki.core.Wiki;
+
+import fastily.wptoolbox.Sys;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import fastily.jwiki.core.Wiki;
-import fastily.wptoolbox.Sys;
 
 /**
  * A GUI wrapper for MTC
@@ -41,9 +42,7 @@ public class App extends Application
 		String minVersion = enwp.getPageText(MStrings.fullname + "/Version").trim();
 		if (!versionCheck(MStrings.version, minVersion))
 		{
-			FXTool.warnUser(
-					String.format("Your version of %s (%s) is outdated.  The current version is (%s), please download the newest version.",
-							MStrings.name, MStrings.version, minVersion));
+			FXTool.warnUser(String.format("Your version of %s (%s) is outdated.  The current version is (%s), please download the newest version.", MStrings.name, MStrings.version, minVersion));
 			FXTool.launchBrowser(this, "https://en.wikipedia.org/wiki/" + MStrings.fullname);
 
 			Platform.exit();
@@ -94,8 +93,7 @@ public class App extends Application
 	}
 
 	/**
-	 * Checks the version String of a program with the version String of the server. PRECONDITION: {@code local} and
-	 * {@code minVersion} ONLY contain numbers and the '.' character.
+	 * Checks the version String of a program with the version String of the server. PRECONDITION: {@code local} and {@code minVersion} ONLY contain numbers and the '.' character.
 	 * 
 	 * @param local The version String of the program. (e.g. 0.2.1)
 	 * @param minVersion The version String of the server. (e.g. 1.3.2)

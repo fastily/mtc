@@ -12,14 +12,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import fastily.jwiki.core.MQuery;
-import fastily.jwiki.core.NS;
-import fastily.jwiki.core.WParser;
-import fastily.jwiki.core.WParser.WTemplate;
-import fastily.jwiki.core.WParser.WikiText;
-import fastily.jwiki.core.Wiki;
-import fastily.jwiki.dwrap.ImageInfo;
-import fastily.jwiki.util.FL;
+import org.fastily.jwiki.core.MQuery;
+import org.fastily.jwiki.core.NS;
+import org.fastily.jwiki.core.WParser;
+import org.fastily.jwiki.core.WParser.WTemplate;
+import org.fastily.jwiki.core.WParser.WikiText;
+import org.fastily.jwiki.core.Wiki;
+import org.fastily.jwiki.dwrap.ImageInfo;
+import org.fastily.jwiki.util.FL;
+
 import fastily.wptoolbox.Dates;
 import fastily.wptoolbox.HTTP;
 import fastily.wptoolbox.Sys;
@@ -105,8 +106,7 @@ public class MTC
 		this.com = com;
 
 		// Generate whitelist & blacklist
-		HashMap<String, ArrayList<String>> l = MQuery.getLinksOnPage(enwp,
-				FL.toSAL(MStrings.fullname + "/Blacklist", MStrings.fullname + "/Whitelist"));
+		HashMap<String, ArrayList<String>> l = MQuery.getLinksOnPage(enwp, FL.toSAL(MStrings.fullname + "/Blacklist", MStrings.fullname + "/Whitelist"));
 		blacklist = new HashSet<>(l.get(MStrings.fullname + "/Blacklist"));
 		whitelist = new HashSet<>(l.get(MStrings.fullname + "/Whitelist"));
 
@@ -137,8 +137,7 @@ public class MTC
 	}
 
 	/**
-	 * Creates TransferFile obejcts from a List of titles. Also filters (if enabled) and auto-resolves Commons filenames
-	 * for transfer candidates.
+	 * Creates TransferFile obejcts from a List of titles. Also filters (if enabled) and auto-resolves Commons filenames for transfer candidates.
 	 * 
 	 * @param titles The List of enwp files to transfer
 	 * @return An ArrayList of TransferObject objects.
@@ -243,8 +242,7 @@ public class MTC
 		/**
 		 * The summary and license sections.
 		 */
-		private StringBuilder sumSection = new StringBuilder("== {{int:filedesc}} ==\n"),
-				licSection = new StringBuilder("\n== {{int:license-header}} ==\n");
+		private StringBuilder sumSection = new StringBuilder("== {{int:filedesc}} ==\n"), licSection = new StringBuilder("\n== {{int:license-header}} ==\n");
 
 		/**
 		 * The list of old revisions for the file
@@ -316,8 +314,7 @@ public class MTC
 
 				return comText != null && downloadFile(imgInfoL.get(0).url, localFN) && com.upload(localFN, comFN, comText, MStrings.tFrom)
 						&& enwp.edit(wpFN, String.format("{{subst:ncd|%s|reviewer=%s}}%n", comFN, enwp.whoami()) + enwpText, MStrings.tTo)
-						&& (!deleteOnTransfer
-								|| enwp.delete(wpFN, String.format("[[WP:CSD#F8|F8]]: Media file available on Commons: [[:%s]]", comFN)));
+						&& (!deleteOnTransfer || enwp.delete(wpFN, String.format("[[WP:CSD#F8|F8]]: Media file available on Commons: [[:%s]]", comFN)));
 			}
 			catch (Throwable e)
 			{
@@ -361,8 +358,7 @@ public class MTC
 			});
 
 			// Filter Templates which are not on Commons
-			MQuery.exists(com, FL.toAL(
-					masterTPL.stream().filter(t -> !ctpCache.containsKey(t.title)).map(t -> com.convertIfNotInNS(t.title, NS.TEMPLATE))))
+			MQuery.exists(com, FL.toAL(masterTPL.stream().filter(t -> !ctpCache.containsKey(t.title)).map(t -> com.convertIfNotInNS(t.title, NS.TEMPLATE))))
 					.forEach((k, v) -> ctpCache.put(com.nss(k), v));
 			masterTPL.removeIf(t -> {
 				if (ctpCache.containsKey(t.title) && !ctpCache.get(t.title))
@@ -414,12 +410,9 @@ public class MTC
 			});
 
 			// fill-out an Information Template
-			sumSection.append(String.format(
-					"{{Information\n|description=%s\n|source=%s\n|date=%s\n|author=%s\n|permission=%s\n|other_versions=%s\n}}\n",
-					fuzzForParam(info, "Description", "") + docRoot.toString().trim(),
-					fuzzForParam(info, "Source", isOwnWork ? "{{Own work by original uploader}}" : "").trim(),
-					fuzzForParam(info, "Date", "").trim(),
-					fuzzForParam(info, "Author", isOwnWork ? String.format("[[User:%s|%s]]", uploader, uploader) : "").trim(),
+			sumSection.append(String.format("{{Information\n|description=%s\n|source=%s\n|date=%s\n|author=%s\n|permission=%s\n|other_versions=%s\n}}\n",
+					fuzzForParam(info, "Description", "") + docRoot.toString().trim(), fuzzForParam(info, "Source", isOwnWork ? "{{Own work by original uploader}}" : "").trim(),
+					fuzzForParam(info, "Date", "").trim(), fuzzForParam(info, "Author", isOwnWork ? String.format("[[User:%s|%s]]", uploader, uploader) : "").trim(),
 					fuzzForParam(info, "Permission", "").trim(), fuzzForParam(info, "Other_versions", "").trim()));
 
 			// Work with text as String
@@ -430,13 +423,11 @@ public class MTC
 
 			// Generate Upload Log Section
 			comText += "\n== {{Original upload log}} ==\n" + String.format("{{Original file page|en.wikipedia|%s}}%n", enwp.nss(wpFN))
-					+ "{| class=\"wikitable\"\n! {{int:filehist-datetime}} !! {{int:filehist-dimensions}} !! {{int:filehist-user}} "
-					+ "!! {{int:filehist-comment}}";
+					+ "{| class=\"wikitable\"\n! {{int:filehist-datetime}} !! {{int:filehist-dimensions}} !! {{int:filehist-user}} " + "!! {{int:filehist-comment}}";
 
 			for (ImageInfo ii : imgInfoL)
-				comText += String.format("%n|-%n| %s || %d × %d || [[w:User:%s|%s]] || ''<nowiki>%s</nowiki>''",
-						Dates.iso8601dtf.format(LocalDateTime.ofInstant(ii.timestamp, ZoneOffset.UTC)), ii.width, ii.height, ii.user,
-						ii.user, ii.summary.replace("\n", " ").replace("  ", " "));
+				comText += String.format("%n|-%n| %s || %d × %d || [[w:User:%s|%s]] || ''<nowiki>%s</nowiki>''", Dates.iso8601dtf.format(LocalDateTime.ofInstant(ii.timestamp, ZoneOffset.UTC)), ii.width,
+						ii.height, ii.user, ii.user, ii.summary.replace("\n", " ").replace("  ", " "));
 			comText += "\n|}\n";
 
 			// Fill in cats
@@ -461,9 +452,7 @@ public class MTC
 		private String fuzzForParam(WTemplate t, String k, String defaultP)
 		{
 			String fzdKey = k;
-			return t != null && (t.has(fzdKey) || t.has(fzdKey = k.toLowerCase()) || t.has(fzdKey = fzdKey.replace('_', ' ')))
-					? t.get(fzdKey).toString()
-					: defaultP;
+			return t != null && (t.has(fzdKey) || t.has(fzdKey = k.toLowerCase()) || t.has(fzdKey = fzdKey.replace('_', ' '))) ? t.get(fzdKey).toString() : defaultP;
 		}
 	}
 }

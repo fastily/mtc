@@ -7,10 +7,10 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
 
 /**
@@ -32,8 +32,7 @@ public class LoginController
 	private Runnable callback;
 
 	/**
-	 * Function used to verify credentials. Called by every login attempt. First parameter is username, second is
-	 * password. Return true to proceed.
+	 * Function used to verify credentials. Called by every login attempt. First parameter is username, second is password. Return true to proceed.
 	 */
 	private BiPredicate<String, String> credTest;
 
@@ -58,8 +57,7 @@ public class LoginController
 	/**
 	 * Initializes data fields with the specified values. CAVEAT: This MUST be called before displaying the Login screen.
 	 * 
-	 * @param credTest Verifies credentials. Called by every login attempt. First parameter is username, second is
-	 *           password. Return true to proceed.
+	 * @param credTest Verifies credentials. Called by every login attempt. First parameter is username, second is password. Return true to proceed.
 	 * @param callback Executed on the FXML thread on successful login.
 	 */
 	public void initData(BiPredicate<String, String> credTest, Runnable callback)
@@ -125,8 +123,7 @@ public class LoginController
 		public void succeeded()
 		{
 			if (!getValue())
-				FXTool.alertUser("Could not login. Please try again and/or verify that you are connected to the internet.",
-						Alert.AlertType.ERROR);
+				FXTool.alertUser("Could not login. Please try again and/or verify that you are connected to the internet.", Alert.AlertType.ERROR);
 			else
 			{
 				((Stage) loginButton.getScene().getWindow()).close();

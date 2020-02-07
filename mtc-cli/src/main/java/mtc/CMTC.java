@@ -3,9 +3,10 @@ package mtc;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import fastily.jwiki.core.NS;
-import fastily.jwiki.core.Wiki;
-import fastily.jwiki.util.FL;
+import org.fastily.jwiki.core.NS;
+import org.fastily.jwiki.core.Wiki;
+import org.fastily.jwiki.util.FL;
+
 import fastily.wptoolbox.WGen;
 import mtc.MTC.FileInfo;
 import picocli.CommandLine;
