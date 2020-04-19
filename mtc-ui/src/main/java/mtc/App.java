@@ -1,8 +1,8 @@
 package mtc;
 
 import org.fastily.jwiki.core.Wiki;
+import org.fastily.wptoolbox.Sys;
 
-import fastily.wptoolbox.Sys;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;

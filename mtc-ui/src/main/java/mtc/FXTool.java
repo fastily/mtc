@@ -1,6 +1,7 @@
 package mtc;
 
-import fastily.wptoolbox.Sys;
+import org.fastily.wptoolbox.Sys;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Alert;

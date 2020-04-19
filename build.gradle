@@ -1,39 +1,46 @@
 plugins {
-  id "org.openjfx.javafxplugin" version "0.0.8" apply false
   id "eclipse"
   id "idea"
+  id "org.openjfx.javafxplugin" version "0.0.8" apply false
 }
 
 subprojects {
-  apply plugin: 'java'
+  apply plugin: 'java-library'
 
   version = "1.1.1"
 
   repositories {
     mavenLocal()
-    jcenter()
+    mavenCentral()
   }
 
   dependencies {
-    compile 'info.picocli:picocli:4.2.0'
-    compile 'fastily:wp-toolbox:0.0.2'
+    implementation 'info.picocli:picocli:4.2.0'
+    implementation 'org.fastily:wp-toolbox:0.0.3'
+  }
+
+  java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
   }
 }
 
+
 project(':mtc-cli') {
-  apply plugin: 'application'
-
-  mainClassName = "mtc.CMTC"
-
   dependencies {
-    compile project(':mtc-shared')
+    implementation project(':mtc-shared')
   }
 
   task doDist(type: Jar) {
-    baseName = "CMTC"
+    archiveClassifier = 'uber'
 
+    archiveBaseName = "CMTC"
+
+    from sourceSets.main.output
+
+    dependsOn configurations.runtimeClasspath
     from {
-      configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+      configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
     }
 
     manifest {
@@ -41,31 +48,31 @@ project(':mtc-cli') {
     }
 
     exclude "META-INF/*.SF", "**/LICENSE*", "**/NOTICE*", "**/maven/**"
-
-    with jar
   }
 }
 
 project(':mtc-ui') {
-  apply plugin: 'application'
   apply plugin: "org.openjfx.javafxplugin"
 
-  mainClassName = "mtc.App"
-
   dependencies {
-    compile project(':mtc-shared')
+    implementation project(':mtc-shared')
   }
 
   javafx {
     version = "11.0.2"
     modules = [ 'javafx.controls', 'javafx.fxml' ]
   }
-
+  
   task doDist(type: Jar) {
-    baseName = "MTC"
+    archiveClassifier = 'uber'
 
+    archiveBaseName = "MTC"
+
+    from sourceSets.main.output
+
+    dependsOn configurations.runtimeClasspath
     from {
-      configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+      configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
     }
 
     manifest {
@@ -73,8 +80,6 @@ project(':mtc-ui') {
     }
 
     exclude "META-INF/*.SF", "**/LICENSE*", "**/NOTICE*", "**/maven/**"
-
-    with jar
   }
 }
 

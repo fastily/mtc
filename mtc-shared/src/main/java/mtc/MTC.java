@@ -20,10 +20,10 @@ import org.fastily.jwiki.core.WParser.WikiText;
 import org.fastily.jwiki.core.Wiki;
 import org.fastily.jwiki.dwrap.ImageInfo;
 import org.fastily.jwiki.util.FL;
+import org.fastily.wptoolbox.Dates;
+import org.fastily.wptoolbox.HTTP;
+import org.fastily.wptoolbox.Sys;
 
-import fastily.wptoolbox.Dates;
-import fastily.wptoolbox.HTTP;
-import fastily.wptoolbox.Sys;
 import okhttp3.HttpUrl;
 import okhttp3.Response;
 

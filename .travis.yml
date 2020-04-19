@@ -5,11 +5,11 @@ language: java
 before_install:
   - git clone --depth 1 https://github.com/fastily/jwiki.git
   - pushd jwiki
-  - ./gradlew -x test publishToMavenLocal
+  - ./gradlew publishToMavenLocal -x signMavenJavaPublication
   - popd
   - git clone --depth 1 https://github.com/fastily/wp-toolbox.git
   - pushd wp-toolbox
-  - ./gradlew -x test publishToMavenLocal
+  - ./gradlew publishToMavenLocal
   - popd
 
 notifications:

@@ -6,8 +6,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.fastily.jwiki.core.NS;
 import org.fastily.jwiki.core.Wiki;
 import org.fastily.jwiki.util.FL;
+import org.fastily.wptoolbox.WGen;
 
-import fastily.wptoolbox.WGen;
 import mtc.MTC.FileInfo;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
