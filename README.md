@@ -1,5 +1,5 @@
 # MTC!
-[![Build Status](https://travis-ci.org/fastily/mtc.svg?branch=master)](https://travis-ci.org/fastily/mtc)
+![Build Status](https://github.com/fastily/mtc/workflows/build/badge.svg)
 ![JDK-11+](https://upload.wikimedia.org/wikipedia/commons/e/ef/Blue_JDK_11%2B_Shield_Badge.svg)
 [![License: GPL v3](https://upload.wikimedia.org/wikipedia/commons/8/86/GPL_v3_Blue_Badge.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
