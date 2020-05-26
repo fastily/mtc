@@ -15,7 +15,7 @@ subprojects {
   }
 
   dependencies {
-    implementation 'info.picocli:picocli:4.2.0'
+    implementation 'info.picocli:picocli:4.3.2'
     implementation 'org.fastily:wp-toolbox:0.0.3'
   }
 
@@ -84,5 +84,5 @@ project(':mtc-ui') {
 }
 
 wrapper {
-  gradleVersion = '6.4'
+  gradleVersion = '6.4.1'
 }
