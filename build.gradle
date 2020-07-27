@@ -1,7 +1,7 @@
 plugins {
   id "eclipse"
   id "idea"
-  id "org.openjfx.javafxplugin" version "0.0.8" apply false
+  id "org.openjfx.javafxplugin" version "0.0.9" apply false
 }
 
 subprojects {
@@ -15,7 +15,7 @@ subprojects {
   }
 
   dependencies {
-    implementation 'info.picocli:picocli:4.3.2'
+    implementation 'info.picocli:picocli:4.4.0'
     implementation 'org.fastily:wp-toolbox:0.0.3'
   }
 
@@ -84,5 +84,5 @@ project(':mtc-ui') {
 }
 
 wrapper {
-  gradleVersion = '6.5'
+  gradleVersion = '6.5.1'
 }
