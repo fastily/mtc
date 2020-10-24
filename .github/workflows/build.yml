@@ -18,7 +18,7 @@ jobs:
     - name: Setup Java JDK
       uses: actions/setup-java@v1.3.0
       with:
-        java-version: 14
+        java-version: 15
     - name: Side-load dependencies
       run: |
         git clone --depth 1 https://github.com/fastily/jwiki.git
