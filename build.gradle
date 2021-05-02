@@ -1,88 +1,43 @@
 plugins {
+  id 'application'
   id "eclipse"
   id "idea"
-  id "org.openjfx.javafxplugin" version "0.0.9" apply false
+  id "org.openjfx.javafxplugin" version "0.0.9"
 }
 
-subprojects {
-  apply plugin: 'java-library'
+version = "1.1.1"
 
-  version = "1.1.1"
-
-  repositories {
-    mavenLocal()
-    mavenCentral()
-  }
-
-  dependencies {
-    implementation 'info.picocli:picocli:4.6.1'
-    implementation 'org.fastily:wp-toolbox:0.0.3'
-  }
-
-  java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
-  }
+repositories {
+  mavenLocal()
+  mavenCentral()
 }
 
+dependencies {
+  implementation 'org.fastily:wp-toolbox:0.0.3'
 
-project(':mtc-cli') {
-  dependencies {
-    implementation project(':mtc-shared')
-  }
+  runtimeOnly "org.openjfx:javafx-graphics:$javafx.version:mac"
+  runtimeOnly "org.openjfx:javafx-graphics:$javafx.version:win"
+  runtimeOnly "org.openjfx:javafx-graphics:$javafx.version:linux"
+}
 
-  task doDist(type: Jar) {
-    archiveClassifier = 'uber'
+javafx {
+  version = "16"
+  modules = [ 'javafx.controls', 'javafx.fxml' ]
+}
 
-    archiveBaseName = "CMTC"
-
-    from sourceSets.main.output
-
-    dependsOn configurations.runtimeClasspath
-    from {
-      configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
-    }
-
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
-      attributes 'Main-Class': 'mtc.CMTC'
+        attributes 'Main-Class': 'mtc.Launcher'
     }
-
-    exclude "META-INF/*.SF", "**/LICENSE*", "**/NOTICE*", "**/maven/**"
-  }
-}
-
-project(':mtc-ui') {
-  apply plugin: "org.openjfx.javafxplugin"
-
-  dependencies {
-    implementation project(':mtc-shared')
-  }
-
-  javafx {
-    version = "11.0.2"
-    modules = [ 'javafx.controls', 'javafx.fxml' ]
-  }
-  
-  task doDist(type: Jar) {
-    archiveClassifier = 'uber'
-
-    archiveBaseName = "MTC"
-
-    from sourceSets.main.output
-
-    dependsOn configurations.runtimeClasspath
     from {
-      configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
+        exclude '**/module-info.class'
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
-
-    manifest {
-      attributes 'Main-Class': 'mtc.App'
-    }
-
-    exclude "META-INF/*.SF", "**/LICENSE*", "**/NOTICE*", "**/maven/**"
-  }
 }
+
+mainClassName = 'mtc.App'
 
 wrapper {
-  gradleVersion = '6.8'
+  gradleVersion = '7.0'
 }
