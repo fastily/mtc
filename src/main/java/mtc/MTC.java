@@ -313,7 +313,7 @@ public class MTC
 				}
 
 				return comText != null && downloadFile(imgInfoL.get(0).url, localFN) && com.upload(localFN, comFN, comText, MStrings.tFrom)
-						&& enwp.edit(wpFN, String.format("{{subst:ncd|%s|reviewer=%s}}%n", comFN, enwp.whoami()) + enwpText, MStrings.tTo)
+						&& enwp.edit(wpFN, String.format("{{subst:ncd|%s}}%n", comFN) + enwpText, MStrings.tTo)
 						&& (!deleteOnTransfer || enwp.delete(wpFN, String.format("[[WP:CSD#F8|F8]]: Media file available on Commons: [[:%s]]", comFN)));
 			}
 			catch (Throwable e)
