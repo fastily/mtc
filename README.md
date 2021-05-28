@@ -1,7 +1,8 @@
 # MTC!
-![Build Status](https://github.com/fastily/mtc/workflows/build/badge.svg)
 ![JDK-11+](https://upload.wikimedia.org/wikipedia/commons/e/ef/Blue_JDK_11%2B_Shield_Badge.svg)
 [![License: GPL v3](https://upload.wikimedia.org/wikipedia/commons/8/86/GPL_v3_Blue_Badge.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
+
+⚠️ THIS PROJECT IS NO LONGER MAINTAINED, see [mtc-cli](https://github.com/fastily/mtc-cli)
 
 MTC! is a tool that helps simplify and automate the file imports from Wikipedia to Commons.
 
